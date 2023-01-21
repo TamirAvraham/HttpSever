@@ -129,7 +129,6 @@
   <ItemGroup>
     <ClCompile Include="HtmlFileReader.cpp" />
     <ClCompile Include="HttpParser.cpp" />
-    <ClCompile Include="HttpResponceBulider.cpp" />
     <ClCompile Include="HttpServer.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
@@ -138,12 +137,12 @@
   <ItemGroup>
     <ClInclude Include="HtmlFileReader.h" />
     <ClInclude Include="HttpParser.h" />
-    <ClInclude Include="HttpResponceBulider.h" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="TcpServer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Error400.html" />
     <None Include="welcomePage.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
