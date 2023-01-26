@@ -2,6 +2,12 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
+#include <sstream>
+#include "JsonType.h"
+
+
+
 
 
 namespace http {
@@ -9,18 +15,16 @@ namespace http {
 		class JsonValue
 		{
 		public: 
-			enum class Type {
-				String,
-				Integer,
-				Real,
-				Boolean,
-				Array,
-				Object
-			};
-			JsonValue() : type_(Type::String), _string_value("") {}
-			JsonValue(Type type, const std::string& value) : type_(type), _string_value(value) {}
+			
+			JsonValue() : _type(JsonType::String), _string_value("") {}
+			JsonValue(JsonType type, const std::string& value) : _type(type), _string_value(value) {}
 
-			Type type() const { return type_; }
+			JsonType type() const { return _type; }
+			template <typename T> T getValue() const;
+
+		private:
+			JsonType _type;
+			std::string _string_value;
 			std::string string_value() const { return _string_value; }
 			int integer_value() const { return std::stoi(_string_value); }
 			double real_value() const { return std::stod(_string_value); }
@@ -29,11 +33,6 @@ namespace http {
 			// array and object type
 			std::vector<JsonValue> array_value() const;
 			std::map<std::string, JsonValue> object_value() const;
-
-		private:
-			Type type_;
-			std::string _string_value;
-			std::string key;
 		};
 	};
 }
