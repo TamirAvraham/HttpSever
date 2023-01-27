@@ -389,10 +389,32 @@
       "url": "https://json.schemastore.org/foxx-manifest.json"
     },
     {
+      "name": "flagd flag configuration",
+      "description": "Flag configuration for the OpenFeature spec compliant flagd provider",
+      "fileMatch": [
+        "flagd.json",
+        "flagd.yaml",
+        "flagd.yml",
+        "*.flagd.json",
+        "*.flagd.yaml",
+        "*.flagd.yml"
+      ],
+      "url": "https://raw.githubusercontent.com/open-feature/schemas/main/json/flagd-definitions.json",
+      "versions": {
+        "0.1.1": "https://raw.githubusercontent.com/open-feature/schemas/json/json-schema-v0.1.1/json/flagd-definitions.json"
+      }
+    },
+    {
       "name": "fly.io Schema",
       "description": "Schema for fly.io, a cloud provider",
       "fileMatch": ["fly.toml"],
       "url": "https://json.schemastore.org/fly.json"
+    },
+    {
+      "name": "Freifunk.de Community API",
+      "description": "Schema for Freifunk.de Community API. See more details https://github.com/freifunk/directory.api.freifunk.net",
+      "fileMatch": ["*.freifunk-api.json"],
+      "url": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.1.json"
     },
     {
       "name": ".asmdef",
@@ -3138,7 +3160,7 @@
       "name": "tmLanguage",
       "description": "Language grammar description files in Textmate and compatible editors",
       "fileMatch": ["*.tmLanguage.json"],
-      "url": "https://raw.githubusercontent.com/Septh/tmlanguage/master/tmLanguage.schema.json"
+      "url": "https://raw.githubusercontent.com/Septh/tmlanguage/master/tmlanguage.json"
     },
     {
       "name": "TestEnvironment.json",
@@ -3271,10 +3293,27 @@
       "url": "https://sap.github.io/ui5-tooling/schema/ui5.yaml.json"
     },
     {
+      "name": "ui5-workspace.yaml",
+      "description": "UI5 Tooling Workspace Configuration File (ui5-workspace.yaml)",
+      "fileMatch": [
+        "ui5-workspace.yaml",
+        "*-ui5-workspace.yaml",
+        "*.ui5-workspace.yaml",
+        "ui5-workspace-deploy.yaml",
+        "ui5-workspace-dist.yaml",
+        "ui5-workspace-local.yaml"
+      ],
+      "url": "https://sap.github.io/ui5-tooling/schema/ui5-workspace.yaml.json"
+    },
+    {
       "name": "UTAM Page Object",
       "description": "UI Test Automation Model page object - https://utam.dev/",
       "fileMatch": ["*.utam.json", ".utam.json"],
-      "url": "https://json.schemastore.org/utam-page-object.json"
+      "url": "https://json.schemastore.org/utam-page-object.json",
+      "versions": {
+        "1.5.0": "https://json.schemastore.org/utam-page-object-1.5.0.json",
+        "current": "https://json.schemastore.org/utam-page-object.json"
+      }
     },
     {
       "name": "vega.json",

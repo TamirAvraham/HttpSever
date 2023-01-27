@@ -2,6 +2,7 @@
 #include "HtmlFileReader.h"
 #include "HttpParser.h"
 #include "JsonValue.h"
+#include "JsonParser.h"
 #include <iostream>
 
 void testFuncForTCPServer(SOCKET sock) {
@@ -20,7 +21,7 @@ int main() {
 
 	}*/
 	
-	http::json::JsonValue jv(http::json::JsonType::Array, "[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}\n");
-	auto vec = jv.getValue<std::vector<http::json::JsonValue>>();
+	http::json::JsonValue jv(http::json::JsonType::Array, "[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}]\n");
+	http::json::JsonParser::parse("{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}");
 	return 0;
 }
