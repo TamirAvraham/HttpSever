@@ -22,6 +22,24 @@ int main() {
 	}*/
 	
 	http::json::JsonValue jv(http::json::JsonType::Array, "[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}]\n");
-	http::json::JsonParser::parse("{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}");
+	const char* jsonStr = R"(
+{
+    "name": "John Smith",
+    "age": 35,
+    "isEmployed": true,
+    "address": {
+        "street": "123 Main St",
+        "city": "Anytown",
+        "state": "Anystate",
+        "zipcode": 12345
+    },
+    "phoneNumbers": [
+        {"type": "home", "number": "555-555-5555"},
+        {"type": "work", "number": "555-555-5556"}
+    ]
+}
+)";
+	auto test=http::json::JsonParser::parse(jsonStr);//"{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}"
+
 	return 0;
 }

@@ -1,16 +1,30 @@
 #include "JsonParser.h"
 #define PARSE_ERROR 400
-http::json::JsonValue http::json::JsonParser::parse(std::string jsonInput)
+std::map<std::string, http::json::JsonValue> http::json::JsonParser::parse(std::string jsonInput)
 {
     size_t firstBracket, lastBracket;
+    std::map<std::string, http::json::JsonValue> jsonKeyValuesMap;
+    JsonKeyValuePair pair;
+
     firstBracket = jsonInput.find('{');
     lastBracket = jsonInput.find_last_of('}');
+    
     if (firstBracket==std::string::npos||lastBracket== std::string::npos)
     {
         throw PARSE_ERROR;
     }
+   
+    jsonInput = jsonInput.substr(firstBracket + 1, lastBracket);
+    pair = parseValue(jsonInput);
+    while (pair.first!="cpplibinternalerror")
+    {
+        jsonKeyValuesMap.insert(pair);
+        pair = parseValue(jsonInput);
+
+    }
     
-    return parseValue(jsonInput.substr(firstBracket+1,lastBracket));
+
+    return jsonKeyValuesMap;
 }
 
 JsonLine http::json::JsonParser::getJsonLine(std::string& jsonObject)
@@ -18,7 +32,10 @@ JsonLine http::json::JsonParser::getJsonLine(std::string& jsonObject)
     
     std::string nameOfLine = GetLineName(jsonObject);
     auto [valueOfLine, endOfLine] = GetLineValue(jsonObject);
-    /*jsonObject = jsonObject.substr(endOfLine, jsonObject.length());*/
+    if (endOfLine == -1)
+        return { "","" };
+    size_t cut = endOfLine + nameOfLine.length()+2;
+    jsonObject = jsonObject.substr(cut+1, jsonObject.length());
     
     return {nameOfLine,valueOfLine};
 }
@@ -35,47 +52,67 @@ std::string http::json::JsonParser::GetLineName(std::string jsonObject)
     {
         return "";
     }
-    return jsonObject.substr(startOfName+1,endOfName-1);
+
+    return jsonObject.substr(startOfName+1,(endOfName-startOfName)-1);
 }
 
 std::pair<std::string, int> http::json::JsonParser::GetLineValue(std::string jsonObject)
 {
+    //finding the split of the keyy value pair
     size_t startOfvalue = jsonObject.find(':');
+    //return vars init
     int returnNumber = -1;
     std::string returnString = "";
+    //cheack if there is a key value pair if no quiit with error return
     if (startOfvalue == std::string::npos)
     {
         return { returnString,returnNumber };
     }
-    returnString = jsonObject.substr(startOfvalue + 1, jsonObject.size());
-    char firstCharOfValue = jsonObject[startOfvalue + 1];
-    if (firstCharOfValue=='{'||firstCharOfValue=='[')
+    //return string = the value part of the key value pair and the rest of the pairs
+    jsonObject = jsonObject.substr(startOfvalue + 1, jsonObject.size());
+    //start of value becomes 0 since we are now working with a new string
+    startOfvalue = 0;
+    //first char fo value
+    char firstCharOfValue = jsonObject[startOfvalue];
+    //inc 
+    while (firstCharOfValue==' ')
     {
-        int endOfValue = findMatchingClosingBracket(returnString);
-        if (endOfValue==-1)
+        firstCharOfValue = jsonObject[++startOfvalue];
+    }
+    //plus 1 for later
+    startOfvalue++;
+    size_t endOfValue;
+    switch (firstCharOfValue)
+    {
+    case '{':
+    case '[':
+        endOfValue = findMatchingClosingBracket(jsonObject,startOfvalue-1);
+        if (endOfValue == -1)
         {
             return { returnString, returnNumber };
         }
-        returnString = jsonObject.substr(startOfvalue+1, endOfValue+1);
-    }
-    else if (firstCharOfValue == '\"') {
-        size_t endOfValue = jsonObject.find(startOfvalue + 1, '\"');
+        returnString = jsonObject.substr(startOfvalue-1, endOfValue + 1);
+        
+        break;
+    case '\"':
+        endOfValue = jsonObject.find('\"',startOfvalue);
         if (endOfValue == std::string::npos)
         {
             return { returnString,returnNumber };
         }
-        returnString = jsonObject.substr(startOfvalue + 1, endOfValue);
-    }
-    else
-    {
-        size_t endOfValue = jsonObject.find(startOfvalue + 1, ',');
+        returnString = jsonObject.substr(startOfvalue, endOfValue-2);
+        break;
+    default:
+        endOfValue = jsonObject.find(',', startOfvalue);
         if (endOfValue == std::string::npos)
         {
             return { returnString,returnNumber };
         }
-        returnString = jsonObject.substr(startOfvalue + 1, endOfValue-1);
+        returnString = jsonObject.substr(startOfvalue - 1 , endOfValue - 1);
+        break;
     }
-    returnNumber = (returnString.length())+startOfvalue+1;
+    auto next_value = jsonObject.find('\"', endOfValue + 1);
+    returnNumber += (next_value==std::string::npos?returnString.size():next_value) + startOfvalue + 1;//lenght of return string + offset from ':' + 1 for ':' 
     return { returnString,returnNumber };
 }
 size_t http::json::JsonParser::findMatchingClosingBracket(std::string jsonString, size_t startIndex)
@@ -100,12 +137,15 @@ size_t http::json::JsonParser::findMatchingClosingBracket(std::string jsonString
     }
     return -1;
 }
-http::json::JsonValue http::json::JsonParser::parseValue(std::string json)
+JsonKeyValuePair http::json::JsonParser::parseValue(std::string& json)
 {
     std::cout << json<<'\n';
     JsonLine line = getJsonLine(json);
     std::cout << line.first << "   " << line.second << '\n';
-    return JsonValue();
+    if (line.second == "" && line.first == "")
+        return { "cpplibinternalerror",http::json::JsonValue()};
+    http::json::JsonValue jsonValue(getTypeFromString(line.second), line.second);
+    return { line.first,jsonValue };
 }
 
 
