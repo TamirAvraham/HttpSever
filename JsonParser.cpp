@@ -112,7 +112,7 @@ std::pair<std::string, int> http::json::JsonParser::GetLineValue(std::string jso
         break;
     }
     auto next_value = jsonObject.find('\"', endOfValue + 1);
-    returnNumber += (next_value==std::string::npos?returnString.size():next_value) + startOfvalue + 1;//lenght of return string + offset from ':' + 1 for ':' 
+    returnNumber += (next_value==std::string::npos?returnString.size():next_value) + startOfvalue;
     return { returnString,returnNumber };
 }
 size_t http::json::JsonParser::findMatchingClosingBracket(std::string jsonString, size_t startIndex)
