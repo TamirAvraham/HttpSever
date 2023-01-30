@@ -12,6 +12,7 @@
 
 namespace http {
 	namespace json {
+		class JsonParser;
 		class JsonValue
 		{
 		public: 
@@ -32,7 +33,7 @@ namespace http {
 
 			// array and object type
 			std::vector<JsonValue> array_value() const;
-			std::map<std::string, JsonValue> object_value() const;
+			std::map<std::string, http::json::JsonValue> object_value() const;
 		};
 	};
 }

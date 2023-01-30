@@ -1,5 +1,5 @@
 #include "JsonValue.h"
-
+#include "JsonParser.h"
 std::vector<http::json::JsonValue> http::json::JsonValue::array_value() const
 {
     size_t startOfArray = _string_value.find('[');
@@ -25,10 +25,14 @@ std::vector<http::json::JsonValue> http::json::JsonValue::array_value() const
     return arrayValues;
 }
 
-std::map<std::string,http::json::JsonValue> http::json::JsonValue::object_value() const
+std::map<std::string, http::json::JsonValue> http::json::JsonValue::object_value() const
 {
-    return std::map<std::string, JsonValue>();
+
+    return http::json::JsonParser::parse(_string_value);
 }
+
+
+
 template <typename T> T http::json::JsonValue::getValue() const {
     if constexpr (std::is_same<T, std::string>::value) {
         if (_type != JsonType::String) {
