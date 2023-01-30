@@ -1,5 +1,5 @@
 #include "JsonParser.h"
-#define PARSE_ERROR 400
+
 std::map<std::string, http::json::JsonValue> http::json::JsonParser::parse(std::string jsonInput)
 {
     size_t firstBracket, lastBracket;

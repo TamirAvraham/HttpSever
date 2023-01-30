@@ -6,6 +6,7 @@
 
 #define JsonLine	std::pair<std::string, std::string>
 #define JsonKeyValuePair std::pair<std::string,http::json::JsonValue>
+#define PARSE_ERROR 400
 namespace http {
 	namespace json {
 		class JsonParser

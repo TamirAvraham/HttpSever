@@ -15,8 +15,6 @@ namespace http {
 
 
 			JsonValue operator[](const std::string name);
-			template<class T>
-			T operator[](const std::string name);
 			void insert(JsonKeyValuePair keyValuePair);
 
 			std::string ToString();
