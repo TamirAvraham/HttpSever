@@ -57,5 +57,20 @@ void http::json::JsonObject::insert(JsonKeyValuePair keyValuePair)
 
 std::string http::json::JsonObject::ToString()
 {
-	return std::string();
+	std::string ret;
+	ret += "{\n ";
+	for (JsonKeyValuePair jsonKeyValue : _jsonMap) {
+		JsonValue jsonValue = jsonKeyValue.second;
+		ret += '\"';
+		ret += jsonKeyValue.first;
+		ret += "\" : ";
+		ret += jsonValue.getValueAsString();
+		if (!(jsonValue.type() == JsonType::Array || JsonType::Object == jsonValue.type())) 
+		{
+			ret += ',';
+		}
+		ret += "\n ";
+	}
+	ret += "\n}";
+	return ret;
 }

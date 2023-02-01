@@ -7,10 +7,8 @@ http::json::JsonType http::json::getTypeFromString(std::string stringAsValue)
 	switch (firstChar)
 	{
 	case '[':
-		if (lastChar==']')
-		{
+		if (stringAsValue.find_last_of(']') != std::string::npos)
 			return JsonType::Array;
-		}
 		break;
 	case '{':
 		if (stringAsValue.find_last_of('}')!=std::string::npos)

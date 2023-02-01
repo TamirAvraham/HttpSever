@@ -3,7 +3,7 @@
 #include <iostream>
 namespace http {
 	namespace json {
-		enum class JsonType {
+		enum class JsonType:char {
 			String,
 			Integer,
 			Real,

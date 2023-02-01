@@ -22,6 +22,7 @@ namespace http {
 
 			JsonType type() const { return _type; }
 			template <typename T> T getValue() const;
+			std::string getValueAsString()const;
 
 		private:
 			JsonType _type;

@@ -1,5 +1,9 @@
 #include "JsonValue.h"
 #include "JsonParser.h"
+std::string http::json::JsonValue::getValueAsString() const
+{
+    return _string_value;
+}
 std::vector<http::json::JsonValue> http::json::JsonValue::array_value() const
 {
     size_t startOfArray = _string_value.find('[');

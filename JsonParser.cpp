@@ -139,9 +139,9 @@ size_t http::json::JsonParser::findMatchingClosingBracket(std::string jsonString
 }
 JsonKeyValuePair http::json::JsonParser::parseValue(std::string& json)
 {
-    std::cout << json<<'\n';
+    
     JsonLine line = getJsonLine(json);
-    std::cout << line.first << "   " << line.second << '\n';
+   
     if (line.second == "" && line.first == "")
         return { "cpplibinternalerror",http::json::JsonValue()};
     http::json::JsonValue jsonValue(getTypeFromString(line.second), line.second);

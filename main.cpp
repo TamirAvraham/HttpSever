@@ -1,8 +1,7 @@
 #include "TcpServer.h"
 #include "HtmlFileReader.h"
 #include "HttpParser.h"
-#include "JsonValue.h"
-#include "JsonParser.h"
+#include "JsonObject.h"
 #include <iostream>
 
 void testFuncForTCPServer(SOCKET sock) {
@@ -39,7 +38,8 @@ int main() {
     ]
 }
 )";
-	auto test=http::json::JsonParser::parse(jsonStr);//"{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}"
-
+	//"{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}"
+	http::json::JsonObject json = std::string(jsonStr);
+	std::cout << json.ToString() << '\n';
 	return 0;
 }
