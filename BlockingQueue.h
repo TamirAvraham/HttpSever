@@ -24,12 +24,12 @@ public:
 	///cheacks if the queue is empty
 	inline bool empty()  const noexcept {
 		Readlock lock(_mtx);
-		std::queue<T>::empty();
+		return std::queue<T>::empty();
 	}
 
 	inline size_t size()  const noexcept {
 		Readlock lock(_mtx);
-		std::queue<T>::size();
+		return std::queue<T>::size();
 	}
 
 
@@ -53,6 +53,7 @@ public:
 	}
 
 	inline bool pop(T& holder) {
+		WriteLock lock(_mtx);
 		if (empty())
 		{
 			return false;
