@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "BlockingQueue.h"
+#include "ThreadSafeQueue.h"
 
 class ThreadPool
 {
@@ -73,7 +74,7 @@ private:
 	bool _cancel;
 
 	std::vector<std::thread> _workers;
-	mutable BlockingQueue<std::function<void()>> _tasks;
+	mutable ThreadSafeQueue<std::function<void()>> _tasks;
 
 	mutable std::shared_mutex _mtx;
 	mutable std::condition_variable_any _cond;

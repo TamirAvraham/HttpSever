@@ -75,7 +75,7 @@ int ThreadPool::size() const
 /// </summary>
 void ThreadPool::spawn()
 {
-	while (true)
+	for(;;)
 	{
 		bool pop = false;
 		std::function<void()> task; 

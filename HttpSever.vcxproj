@@ -154,6 +154,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="TcpServer.h" />
     <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="ThreadSafeQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Error400.html" />

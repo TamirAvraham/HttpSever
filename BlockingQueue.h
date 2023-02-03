@@ -49,7 +49,8 @@ public:
 
 	template <typename... Args>
 	inline void emplace(Args&&... args)noexcept {
-		std::queue<T>::emplace(args);
+		WriteLock lock(_mtx);
+		std::queue<T>::emplace(std::forward<Args>(args)...);
 	}
 
 	inline bool pop(T& holder) {
