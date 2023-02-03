@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cctype>
 #include "TcpServer.h"
-
+#include "HttpStatus.h"
 
 
 namespace http {
@@ -17,11 +17,6 @@ namespace http {
 		HttpDELETE = 3,
 		HttpOPTIONS = 4
 	};
-	enum HttpErrorType
-	{
-		Http400 = 400,
-		HttpNoError=1,
-	};
 
 	class HttpTokenizer
 	{
@@ -30,13 +25,13 @@ namespace http {
 		std::string GetBody();
 		std::string GetRoute();
 		HttpRequestType GetType();
-		HttpErrorType GetError();
+		HttpStatus GetError();
 	private:
 		std::string _header;
 		std::string _body;
 		std::string _route;
 		HttpRequestType _requestType;
-		HttpErrorType _error;
+		HttpStatus _error;
 
 		void parse(std::string req);
 		void getBody(std::string req);

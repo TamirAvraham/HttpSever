@@ -3,7 +3,7 @@
 http::HttpTokenizer::HttpTokenizer(std::string request)
 {
 	std::cout << request << '\n';
-	_error = HttpNoError;
+	_error = HttpStatus::OK;
 	parse(request);
 }
 
@@ -22,7 +22,7 @@ http::HttpRequestType http::HttpTokenizer::GetType()
 	return _requestType;
 }
 
-http::HttpErrorType http::HttpTokenizer::GetError()
+http::HttpStatus http::HttpTokenizer::GetError()
 {
 	return _error;
 }
@@ -44,7 +44,7 @@ void http::HttpTokenizer::parse(std::string req)
 	{
 		_requestType = StringToHttpRequestType(type);
 	}
-	catch (HttpErrorType error)
+	catch (HttpStatus error)
 	{
 		_error = error;
 	}
@@ -63,7 +63,7 @@ void http::HttpTokenizer::getBody(std::string req)
 		size_t endOfData = req.find('}');
 		if (startOfData == std::string::npos || endOfData == std::string::npos) {
 			std::cout << "no data" << '\n';
-			_error = Http400;
+			_error = HttpStatus::BadRequest;
 			return;
 		}
 		_body = req.substr(startOfData, endOfData);
@@ -76,13 +76,13 @@ void http::HttpTokenizer::getBody(std::string req)
 		size_t endOfData = req.find_last_of(">");
 		if (startOfData == std::string::npos || endOfData == std::string::npos) {
 			std::cout << "no data" << '\n';
-			_error = Http400;
+			_error = HttpStatus::BadRequest;
 			return;
 		}
 		_body = req.substr(startOfData, endOfData);
 		return;
 	}
-	_error = Http400;
+	_error = HttpStatus::BadRequest;
 }
 
 http::HttpRequestType http::HttpTokenizer::StringToHttpRequestType(std::string requestType)
@@ -107,6 +107,6 @@ http::HttpRequestType http::HttpTokenizer::StringToHttpRequestType(std::string r
 	{
 		return HttpOPTIONS;
 	}
-	throw Http400;
+	throw HttpStatus::BadRequest;
 }
 

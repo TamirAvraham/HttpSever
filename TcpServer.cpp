@@ -6,11 +6,13 @@
 #include <sstream>
 
 #define INIT_ERROR 505
+
 namespace http {
     Logger logger;
 }
+using http::logger;
 
-http::TcpServer::TcpServer(int port, std::string ip):_ip_address(ip),_port(port), _socketAddress_len(sizeof(_socketAddress)),_socketAddress()
+tcp::TcpServer::TcpServer(int port, std::string ip):_ip_address(ip),_port(port), _socketAddress_len(sizeof(_socketAddress)),_socketAddress()
 {
     if (startServer()!=1)
     {
@@ -52,13 +54,13 @@ http::TcpServer::TcpServer(int port, std::string ip):_ip_address(ip),_port(port)
     }*/
 }
 
-http::TcpServer::~TcpServer()
+tcp::TcpServer::~TcpServer()
 {
     closesocket(_ListenSocket);
     WSACleanup();
 }
 
-void http::TcpServer::HandleConection(std::function<void(SOCKET sock)> handleFunction)
+void tcp::TcpServer::HandleConection(std::function<void(SOCKET sock)> handleFunction)
 {
     SOCKET newSocket;
     acceptConnection(newSocket);
@@ -66,7 +68,7 @@ void http::TcpServer::HandleConection(std::function<void(SOCKET sock)> handleFun
     connectionThread.detach();
 }
 
-int http::TcpServer::startServer()
+int tcp::TcpServer::startServer()
 {
     PVOID pAddrBuf;
     if (WSAStartup(MAKEWORD(2, 0), &_wsaData) != 0)
@@ -99,11 +101,11 @@ int http::TcpServer::startServer()
     return 1;
 }
 
-void http::TcpServer::startListen()
+void tcp::TcpServer::startListen()
 {
     if (listen(_ListenSocket, 20) < 0)
     {
-       logger. exitWithError("Socket listen failed");
+       http::logger. exitWithError("Socket listen failed");
     }
     std::ostringstream ss;
     PWSTR str=nullptr;
@@ -112,10 +114,10 @@ void http::TcpServer::startListen()
         << str
         << " PORT: " << ntohs(_socketAddress.sin_port)
         << " ***\n\n";
-    logger.log(ss.str());
+    http::logger.log(ss.str());
 }
 
-void http::TcpServer::acceptConnection(SOCKET& new_socket)
+void tcp::TcpServer::acceptConnection(SOCKET& new_socket)
 {
     new_socket = accept(_ListenSocket, (sockaddr*)&_socketAddress,&_socketAddress_len);
     if (new_socket < 0)
@@ -127,12 +129,12 @@ void http::TcpServer::acceptConnection(SOCKET& new_socket)
             "Server failed to accept incoming connection from ADDRESS: "
             << str << "; PORT: "
             << ntohs(_socketAddress.sin_port);
-        logger.exitWithError(ss.str());
+        http::logger.exitWithError(ss.str());
     }
 }
 
 template<class I>
-void http::TcpServer::HandleConection(std::function<void(I, SOCKET sock)> handleFunction, I inputs)
+void tcp::TcpServer::HandleConection(std::function<void(I, SOCKET sock)> handleFunction, I inputs)
 {
     SOCKET newSocket;
     acceptConnection(newSocket);
@@ -146,28 +148,28 @@ void http::TcpServer::HandleConection(std::function<void(I, SOCKET sock)> handle
 
 
 
-http::simpleSocket::simpleSocket(SOCKET socket):_socket(socket)
+tcp::simpleSocket::simpleSocket(SOCKET socket):_socket(socket)
 {
 }
 
-http::simpleSocket::~simpleSocket()
+tcp::simpleSocket::~simpleSocket()
 {
     closesocket(_socket);
 }
 
-std::string http::simpleSocket::read(int bufferSize)
+std::string tcp::simpleSocket::read(int bufferSize)
 {
     char *buffer = new char[bufferSize];
     int bytesRead = recv(_socket, buffer, bufferSize, 0);
     if (bytesRead < 0)
     {
-        logger.exitWithError("Failed to receive bytes from client socket connection");
+        http::logger.exitWithError("Failed to receive bytes from client socket connection");
     }
     std::string ret = buffer;
     return ret;
 }
 
-void http::simpleSocket::write(std::string msg)
+void tcp::simpleSocket::write(std::string msg)
 {
     int totalBytesSent = 0;
     int bytesSent = 0;
@@ -182,11 +184,11 @@ void http::simpleSocket::write(std::string msg)
     }
     if (totalBytesSent == msg.size())
     {
-        logger.log("------ Server Response sent to client ------\n\n");
+        http::logger.log("------ Server Response sent to client ------\n\n");
     }
     else
     {
-        logger.log("Error sending response to client.");
+        http::logger.log("Error sending response to client.");
     }
 }
 

@@ -11,7 +11,7 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-namespace http {
+namespace tcp {
 	
 
 	class TcpServer

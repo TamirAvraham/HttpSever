@@ -147,6 +147,7 @@
     <ClInclude Include="HtmlFileReader.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
+    <ClInclude Include="HttpStatus.h" />
     <ClInclude Include="JsonObject.h" />
     <ClInclude Include="JsonParser.h" />
     <ClInclude Include="JsonType.h" />

@@ -6,7 +6,7 @@
 #include <iostream>
 
 void testFuncForTCPServer(SOCKET sock) {
-	http::simpleSocket mySocket(sock);
+	tcp::simpleSocket mySocket(sock);
 	
 	http::HttpTokenizer parser(mySocket.read(3000));
 
