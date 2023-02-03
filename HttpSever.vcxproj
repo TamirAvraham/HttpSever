@@ -133,6 +133,7 @@
     <ClCompile Include="HtmlFileReader.cpp" />
     <ClCompile Include="HttpParser.cpp" />
     <ClCompile Include="HttpServer.cpp" />
+    <ClCompile Include="HttpSocket.cpp" />
     <ClCompile Include="JsonObject.cpp" />
     <ClCompile Include="JsonParser.cpp" />
     <ClCompile Include="JsonType.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="HtmlFileReader.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
+    <ClInclude Include="HttpSocket.h" />
     <ClInclude Include="HttpStatus.h" />
     <ClInclude Include="JsonObject.h" />
     <ClInclude Include="JsonParser.h" />

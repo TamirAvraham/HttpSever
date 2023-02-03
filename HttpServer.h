@@ -3,7 +3,7 @@
 
 #include<string>
 #include<set>
-
+#include<vector>
 
 #include "HttpParser.h"
 #include "HttpStatus.h"
@@ -13,9 +13,22 @@
 
 
 namespace http {
-	struct HttpContext {
-
+	struct HttpRouteParam
+	{
+		std::string _paramName;
+		std::string _paramValue;
 	};
+	class HttpContext {
+	public:
+		std::string GetParam(std::string paramName);
+		std::string GetBody();
+		json::JsonObject GetBodyAsJson();
+	private:
+		std::string _body;
+		std::vector<HttpRouteParam> _params;
+		
+	};
+
 	struct HttpRoute
 	{
 		HttpRequestType _type;
@@ -31,6 +44,7 @@ namespace http {
 
 	private:
 		std::set<HttpRoute> routes;
+		ThreadPool _threadPool;
 	};
 }
 
