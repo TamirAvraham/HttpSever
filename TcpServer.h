@@ -20,12 +20,16 @@ namespace tcp {
 		TcpServer(int port,std::string ip);
 		~TcpServer();
 		void HandleConection(std::function<void(SOCKET sock)> handleFunction);
+		
 		template<class I>
 		void HandleConection(std::function<void(I,SOCKET sock)> handleFunction,I inputs);
+	protected:
+		void acceptConnection(SOCKET& new_socket);
+		std::function<void(SOCKET)> _conHandelr;
 	private:
 		int startServer();
 		void startListen();
-		void acceptConnection(SOCKET& new_socket);
+		
 
 		int _port;
 		std::string _ip_address;

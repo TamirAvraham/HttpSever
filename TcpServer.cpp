@@ -184,7 +184,8 @@ void tcp::simpleSocket::write(std::string msg)
     }
     if (totalBytesSent == msg.size())
     {
-        http::logger.log("------ Server Response sent to client ------\n\n");
+        http::logger.log("\n\n------ Server Response sent to client ------\n\n");
+        http::logger.log(msg);
     }
     else
     {

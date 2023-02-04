@@ -10,23 +10,34 @@
 #include "JsonObject.h"
 #include "TcpServer.h"
 #include "ThreadPool.h"
-
+#include "HttpSocket.h"
 
 namespace http {
 	struct HttpRouteParam
 	{
 		std::string _paramName;
 		std::string _paramValue;
+		inline HttpRouteParam(std::string name, std::string value):_paramName(name),_paramValue(value) {}
 	};
+
+
 	class HttpContext {
+
 	public:
-		std::string GetParam(std::string paramName);
-		std::string GetBody();
-		json::JsonObject GetBodyAsJson();
+
+		std::string GetParam(std::string paramName)const;
+
+		std::string GetBody()const noexcept;
+		json::JsonObject GetBodyAsJson()const noexcept;
+
+		void sendJson(http::HttpStatus status,http::json::JsonObject jsonObject,http::HttpHeaders headers);
+
+		void sendHtml(http::HttpStatus status,http::HtmlFileReader htmlfile,http::HttpHeaders headers);
+
 	private:
 		std::string _body;
 		std::vector<HttpRouteParam> _params;
-		
+		http::HttpSocket _sock;
 	};
 
 	struct HttpRoute
@@ -34,15 +45,15 @@ namespace http {
 		HttpRequestType _type;
 		std::string _route;
 		std::function<void(HttpContext)> _handler;
-
 	};
 	
 	class HttpServer:protected tcp::TcpServer
 	{
 		HttpServer(int port, std::string ip);
-
+		void HandleRoute(HttpRoute);
 
 	private:
+		void ConnHandler(SOCKET sock);
 		std::set<HttpRoute> routes;
 		ThreadPool _threadPool;
 	};

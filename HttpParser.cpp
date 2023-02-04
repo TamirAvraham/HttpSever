@@ -2,7 +2,6 @@
 
 http::HttpTokenizer::HttpTokenizer(std::string request)
 {
-	std::cout << request << '\n';
 	_error = HttpStatus::OK;
 	parse(request);
 }
@@ -37,7 +36,7 @@ void http::HttpTokenizer::parse(std::string req)
 
 	headerAsString >> type;
 	headerAsString >> route;
-	std::cout << type<<'\n'<<route<<'\n';
+	
 
 	_route = route;
 	try

@@ -6,6 +6,7 @@
 #include "JsonObject.h"
 
 
+ 
 namespace http{
 
 	struct HttpHeaders {
@@ -22,16 +23,15 @@ namespace http{
 			}
 			return "";
 		}
+		inline HttpHeaders(){};
 	};
 
 	class HttpSocket :protected tcp::simpleSocket
 	{
 	public:
 		inline HttpSocket(SOCKET socket) :tcp::simpleSocket(socket){};
-		void bind(const HttpStatus status,const json::JsonObject json,const HttpHeaders headers)const;
-		void bind(const HttpStatus status,const json::JsonObject json)const;
-		void bind(const HttpStatus status,const HtmlFileReader htmlFile,const HttpHeaders headers)const;
-		void bind(const HttpStatus status,const HtmlFileReader htmlFile)const;
+		void bindMsg(const HttpStatus status,const json::JsonObject json,const HttpHeaders headers= HttpHeaders());
+		void bindMsg(const HttpStatus status,const HtmlFileReader htmlFile,const HttpHeaders headers= HttpHeaders());
 
 	private:
 		std::string generateHttpResponceFromRequst(HttpStatus status, json::JsonObject json, const HttpHeaders headers)const;
