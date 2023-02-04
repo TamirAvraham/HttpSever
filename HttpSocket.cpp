@@ -51,7 +51,7 @@ std::string http::HttpSocket::generateHttpResponceFromRequst(HttpStatus status, 
         int length = htmlFile.getFileAsString().length();
         ret += std::to_string(length);
     }
-    ret += '\n\n';
+    ret += "\n\n";
     ret += htmlFile.getFileAsString();
     return ret;
 }
