@@ -14,14 +14,15 @@ namespace http {
 			JsonObject& operator=(const std::map<std::string, http::json::JsonValue> jsonMap);
 
 
-			JsonValue operator[](const std::string name);
+			JsonValue operator[](const std::string name)const;
 			void insert(JsonKeyValuePair keyValuePair);
 
 			std::string ToString();
 
 		private:
 			std::map<std::string, http::json::JsonValue> _jsonMap;
-			
+			std::string _asString;
+			bool _changed;
 		};
 	}
 }

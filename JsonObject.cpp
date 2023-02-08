@@ -4,7 +4,7 @@ http::json::JsonObject::JsonObject():_jsonMap()
 {
 }
 
-http::json::JsonObject::JsonObject(const std::string jsonString)
+http::json::JsonObject::JsonObject(const std::string jsonString):_asString("/\\"),_changed(false)
 {
 	try
 	{
@@ -20,10 +20,12 @@ http::json::JsonObject::JsonObject(const std::string jsonString)
 	{
 		throw std::invalid_argument("invalid argument");
 	}
+	_asString = jsonString;
 }
 
-http::json::JsonObject::JsonObject(const std::map<std::string, http::json::JsonValue> jsonMap):_jsonMap(jsonMap)
+http::json::JsonObject::JsonObject(const std::map<std::string, http::json::JsonValue> jsonMap):_jsonMap(jsonMap),_changed(false)
 {
+	_asString = ToString();
 }
 
 http::json::JsonObject& http::json::JsonObject::operator=(std::string jsonString)
@@ -38,7 +40,7 @@ http::json::JsonObject& http::json::JsonObject::operator=(const std::map<std::st
 	return *this;
 }
 
-http::json::JsonValue http::json::JsonObject::operator[](const std::string name)
+http::json::JsonValue http::json::JsonObject::operator[](const std::string name)const
 {
 	JsonValue ret;
 	try {
@@ -53,10 +55,24 @@ http::json::JsonValue http::json::JsonObject::operator[](const std::string name)
 void http::json::JsonObject::insert(JsonKeyValuePair keyValuePair)
 {
 	_jsonMap.insert(keyValuePair);
+	_changed = true;
 }
 
 std::string http::json::JsonObject::ToString()
 {
+	if (_asString!="/\\"&&!_changed)
+	{
+		std::string cahedRet = _asString;
+		int cP = cahedRet.length();
+		char c = cahedRet[cP-1];
+		if (c!='}')
+		{
+			cahedRet += "\n}";
+		}
+		return cahedRet;
+	}
+	//TODO:
+	//add a way to add only the new values to _as string to save on time
 	std::string ret;
 	ret += "{\n ";
 	for (JsonKeyValuePair jsonKeyValue : _jsonMap) {
@@ -71,6 +87,7 @@ std::string http::json::JsonObject::ToString()
 		}
 		ret += "\n ";
 	}
+	_asString = ret;
 	ret += "\n}";
 	return ret;
 }

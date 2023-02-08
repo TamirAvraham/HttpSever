@@ -6,27 +6,25 @@
 
 void testFuncForTCPServer(SOCKET sock) {
 	http::HttpSocket mySocket(sock);
-//	const char* jsonStr = R"(
-//{
-//    "name": "John Smith",
-//    "age": 35,
-//    "isEmployed": true,
-//    "address": {
-//        "street": "123 Main St",
-//        "city": "Anytown",
-//        "state": "Anystate",
-//        "zipcode": 12345
-//    },
-//    "phoneNumbers": [
-//        {"type": "home", "number": "555-555-5555"},
-//        {"type": "work", "number": "555-555-5556"}
-//    ]
-//}
-//)";
-//	/*"{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}"*/
-//	http::json::JsonObject json = std::string(jsonStr);
-	http::HtmlFileReader file("welcomePage.html");
-	mySocket.bindMsg(http::HttpStatus::OK,file);
+	const char* jsonStr = R"(
+{
+    "name": "John Smith",
+    "age": 35,
+    "isEmployed": true,
+    "address": {
+        "street": "123 Main St",
+        "city": "Anytown",
+        "state": "Anystate",
+        "zipcode": 12345
+    },
+    "phoneNumbers": [
+        {"type": "home", "number": "555-555-5555"},
+        {"type": "work", "number": "555-555-5556"}
+    ]
+})";
+	/*"{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}"*/
+	http::json::JsonObject json = std::string(jsonStr);
+	mySocket.bindMsg(http::HttpStatus::OK,json);
 	
 
 }
