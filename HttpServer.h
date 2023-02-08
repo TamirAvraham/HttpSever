@@ -54,6 +54,9 @@ namespace http {
 
 	private:
 		void ConnHandler(SOCKET sock);
+		std::pair<bool,std::vector<HttpRouteParam>> matchRoute(std::string route, std::string templateRoute)const;
+		HttpContext getContextFromReq(std::string req, SOCKET sock);
+		/*std::vector<http::HttpRouteParam> getRouteParams(std::string route,std::string parttern)const;*/
 		std::set<HttpRoute> routes;
 		ThreadPool _threadPool;
 	};
