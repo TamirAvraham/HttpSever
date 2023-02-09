@@ -2,6 +2,7 @@
 #include "JsonObject.h"
 #include "ThreadPool.h"
 #include "HttpSocket.h"
+#include "HttpServer.h"
 #include <iostream>
 
 void testFuncForTCPServer(SOCKET sock) {

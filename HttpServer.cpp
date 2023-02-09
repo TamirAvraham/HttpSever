@@ -39,7 +39,7 @@
 //    return params;
 //}
 
-std::pair<bool, std::vector<http::HttpRouteParam>> http::HttpServer::matchRoute(std::string route, std::string templateRoute) const
+std::pair<bool, std::vector<http::HttpRouteParam>> http::HttpServer::getParamsFromRoute(std::string route, std::string templateRoute) const
 {
     std::stringstream routeAsStream(route),templateRouteAsStream(templateRoute);
     std::vector<std::string> routeVector, templateRouteVector;
@@ -79,8 +79,34 @@ std::pair<bool, std::vector<http::HttpRouteParam>> http::HttpServer::matchRoute(
 
     return {true,params};
 }
+std::vector<http::HttpRouteParam> http::HttpServer::matchRoute(std::string gotRoute,http::HttpRequestType reqType)
+{
+    for (auto route:_routes)
+    {
+        auto [is_route, params] = getParamsFromRoute(gotRoute, route._route);
+        if (reqType==route._type&&is_route)
+        {
+            return params;
+        }
+    }
+    throw http::HttpStatus::NotFound;
+}
+http::HttpContext http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
+{
+    http::HttpTokenizer reqAsHttpToken(req);
+    if (reqAsHttpToken.GetError()!=HttpStatus::OK)
+    {
+        throw reqAsHttpToken.GetError();
+    }
+    std::vector<http::HttpRouteParam> routeParams = matchRoute(req, reqAsHttpToken.GetType());
+    return http::HttpContext(reqAsHttpToken.GetBody(), routeParams, sock);
+}
 //
 //std::vector<http::HttpRouteParam> http::HttpServer::getRouteParams(std::string route, std::string parttern) const
 //{
 //    return GetParams(route,parttern);
 //}
+
+http::HttpContext::HttpContext(std::string body, std::vector<HttpRouteParam> params, SOCKET sock):_body(body),_params(params),_sock(sock)
+{
+}

@@ -24,7 +24,7 @@ namespace http {
 	class HttpContext {
 
 	public:
-
+		HttpContext(std::string body,std::vector<HttpRouteParam> params,SOCKET sock);
 		std::string GetParam(std::string paramName)const;
 
 		std::string GetBody()const noexcept;
@@ -49,15 +49,19 @@ namespace http {
 	
 	class HttpServer:protected tcp::TcpServer
 	{
+	public:
 		HttpServer(int port, std::string ip);
 		void HandleRoute(HttpRoute);
+		
 
 	private:
 		void ConnHandler(SOCKET sock);
-		std::pair<bool,std::vector<HttpRouteParam>> matchRoute(std::string route, std::string templateRoute)const;
 		HttpContext getContextFromReq(std::string req, SOCKET sock);
+		std::pair<bool,std::vector<HttpRouteParam>> getParamsFromRoute(std::string route, std::string templateRoute)const;
+		std::vector<HttpRouteParam> matchRoute(std::string gotRoute, http::HttpRequestType reqType);
+		
 		/*std::vector<http::HttpRouteParam> getRouteParams(std::string route,std::string parttern)const;*/
-		std::set<HttpRoute> routes;
+		std::set<HttpRoute> _routes;
 		ThreadPool _threadPool;
 	};
 }

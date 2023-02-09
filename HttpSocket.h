@@ -26,7 +26,7 @@ namespace http{
 		inline HttpHeaders(){};
 	};
 
-	class HttpSocket :protected tcp::simpleSocket
+	class HttpSocket :public tcp::simpleSocket
 	{
 	public:
 		inline HttpSocket(SOCKET socket) :tcp::simpleSocket(socket){};
