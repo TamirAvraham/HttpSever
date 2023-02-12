@@ -67,10 +67,7 @@ std::pair<bool, std::vector<http::HttpRouteParam>> http::HttpServer::getParamsFr
         if (templateRouteVector[i][0] == ':')
         {
             std::string cache1 = templateRouteVector[i].substr(1), cache2 = routeVector[i];
-            if (cache1 == cache2)
-                params.push_back({ cache1,cache2 });
-            else
-                return{ false,{} };
+            params.push_back({ cache1,cache2 });
             continue;
         }
         else if (templateRouteVector[i] != routeVector[i])
@@ -79,27 +76,58 @@ std::pair<bool, std::vector<http::HttpRouteParam>> http::HttpServer::getParamsFr
 
     return {true,params};
 }
-std::vector<http::HttpRouteParam> http::HttpServer::matchRoute(std::string gotRoute,http::HttpRequestType reqType)
+std::pair<std::vector<http::HttpRouteParam>, std::function<void(http::HttpServer::HttpContext)>> http::HttpServer::matchRoute(std::string gotRoute,http::HttpRequestType reqType)
 {
-    for (auto route:_routes)
+    for (auto route:_routes.at(reqType))
     {
         auto [is_route, params] = getParamsFromRoute(gotRoute, route._route);
-        if (reqType==route._type&&is_route)
+        if (is_route)
         {
-            return params;
+            return { params,route._handler };
         }
     }
     throw http::HttpStatus::NotFound;
 }
-http::HttpContext http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
+void http::HttpServer::serve()
+{
+   
+    while (true)
+    {
+        SOCKET newsock;
+        acceptConnection(newsock);
+        ConnHandler(newsock);
+    }
+}
+http::HttpServer::HttpServer(int port, std::string ip):tcp::TcpServer(port,ip)
+{
+}
+void http::HttpServer::HandleRoute(http::HttpRequestType type, HttpRoute route)
+{
+    auto typeRouteVec = _routes.find(type);
+    if (typeRouteVec==_routes.end())
+    {
+        _routes.insert({ type,{} });
+    }
+    _routes.at(type).push_back(route);
+}
+void http::HttpServer::ConnHandler(SOCKET sock)
+{
+    tcp::simpleSocket simpleSock(sock);
+    std::string req=simpleSock.read(10000);
+    _threadPool.async([&]() {
+        auto contextfut = _threadPool.async([&]() {return getContextFromReq(req, sock); });
+        _threadPool.async([&]() { contextfut.wait();    contextfut.get().second(contextfut.get().first);    });
+    });
+}
+std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::HttpContext)>> http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
 {
     http::HttpTokenizer reqAsHttpToken(req);
-    if (reqAsHttpToken.GetError()!=HttpStatus::OK)
+    if (reqAsHttpToken.GetError() != HttpStatus::OK)
     {
         throw reqAsHttpToken.GetError();
     }
-    std::vector<http::HttpRouteParam> routeParams = matchRoute(req, reqAsHttpToken.GetType());
-    return http::HttpContext(reqAsHttpToken.GetBody(), routeParams, sock);
+    auto [routeParams, handler] = matchRoute(req, reqAsHttpToken.GetType());
+    return {http::HttpServer::HttpContext(reqAsHttpToken.GetBody(), routeParams, sock), handler};
 }
 //
 //std::vector<http::HttpRouteParam> http::HttpServer::getRouteParams(std::string route, std::string parttern) const
@@ -107,6 +135,41 @@ http::HttpContext http::HttpServer::getContextFromReq(std::string req, SOCKET so
 //    return GetParams(route,parttern);
 //}
 
-http::HttpContext::HttpContext(std::string body, std::vector<HttpRouteParam> params, SOCKET sock):_body(body),_params(params),_sock(sock)
+http::HttpServer::HttpContext::HttpContext(std::string body, std::vector<HttpRouteParam> params, SOCKET sock):_body(body),_params(params),_sock(sock)
+{
+}
+
+std::string http::HttpServer::HttpContext::GetParam(std::string paramName) const
+{
+    for (HttpRouteParam param : _params) {
+        if (param._paramName==paramName)
+        {
+            return param._paramValue;
+        }
+    }
+    throw std::invalid_argument("param name was not found");
+}
+
+std::string http::HttpServer::HttpContext::GetBody() const noexcept
+{
+    return _body;
+}
+
+http::json::JsonObject http::HttpServer::HttpContext::GetBodyAsJson() const noexcept
+{
+    return json::JsonObject(_body);
+}
+
+void http::HttpServer::HttpContext::sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers)
+{
+    _sock.bindMsg(status, jsonObject, headers);
+}
+
+void http::HttpServer::HttpContext::sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers)
+{
+    _sock.bindMsg(status, htmlfile, headers);
+}
+
+http::HttpRoute::HttpRoute(std::string routeTemplate, std::function<void(HttpServer::HttpContext)> handler):_route(routeTemplate),_handler(handler)
 {
 }
