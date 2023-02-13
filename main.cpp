@@ -32,14 +32,14 @@ void testFuncForTCPServer(SOCKET sock) {
 
 int main() {
 
-	tcp::TcpServer server(8080, "127.0.0.1");
+	/*tcp::TcpServer server(8080, "127.0.0.1");
 	
 	while (true)
 	{
 		server.HandleConection(testFuncForTCPServer);
 	}
 	
-	http::json::JsonValue jv(http::json::JsonType::Array, "[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}]\n");
+	http::json::JsonValue jv(http::json::JsonType::Array, "[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}]\n");*/
 	
 
 
@@ -54,7 +54,11 @@ int main() {
 	std::cout << fut1.get()<<"\n\n\n\n\n"<<fut2.get();
 	pool.cancel();
 	return 0;*/
-
+	http::HttpServer server(8080, "127.0.0.1");
+	server.HandleRoute(http::HttpGET, { "/:id",[](http::HttpServer::HttpContext context) {
+		std::cout << context.GetParam("id");
+	} });
+	server.serve();
 }
 /*
 * 

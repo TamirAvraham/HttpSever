@@ -161,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Error400.html" />
+    <None Include="Error404.html" />
     <None Include="welcomePage.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

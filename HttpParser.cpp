@@ -52,36 +52,41 @@ void http::HttpTokenizer::parse(std::string req)
 
 void http::HttpTokenizer::getBody(std::string req)
 {
-	auto isHtml = req.find("html");
-	auto isJson = req.find("json");
-	//data is json
-	if (isHtml == std::string::npos && isJson != std::string::npos) 
+	auto HasContent = req.find("Content-Type");
+
+	if (HasContent!=std::string::npos)
 	{
-		std::cout << "is json" << '\n';
-		size_t startOfData = req.find('{');
-		size_t endOfData = req.find('}');
-		if (startOfData == std::string::npos || endOfData == std::string::npos) {
-			std::cout << "no data" << '\n';
-			_error = HttpStatus::BadRequest;
+		auto isHtml = req.find("html");
+		auto isJson = req.find("json");
+		//data is json
+		if (isHtml == std::string::npos && isJson != std::string::npos)
+		{
+			std::cout << "is json" << '\n';
+			size_t startOfData = req.find('{');
+			size_t endOfData = req.find('}');
+			if (startOfData == std::string::npos || endOfData == std::string::npos) {
+				std::cout << "no data" << '\n';
+				_error = HttpStatus::BadRequest;
+				return;
+			}
+			_body = req.substr(startOfData, endOfData);
 			return;
 		}
-		_body = req.substr(startOfData, endOfData);
-		return;
-	}
-	//data is html
-	if (isHtml != std::string::npos && isJson == std::string::npos) {
-		std::cout << "is html" << '\n';
-		size_t startOfData = req.find("<");
-		size_t endOfData = req.find_last_of(">");
-		if (startOfData == std::string::npos || endOfData == std::string::npos) {
-			std::cout << "no data" << '\n';
-			_error = HttpStatus::BadRequest;
+		//data is html
+		if (isHtml != std::string::npos && isJson == std::string::npos) {
+			std::cout << "is html" << '\n';
+			size_t startOfData = req.find("<");
+			size_t endOfData = req.find_last_of(">");
+			if (startOfData == std::string::npos || endOfData == std::string::npos) {
+				std::cout << "no data" << '\n';
+				_error = HttpStatus::BadRequest;
+				return;
+			}
+			_body = req.substr(startOfData, endOfData);
 			return;
 		}
-		_body = req.substr(startOfData, endOfData);
-		return;
+		_error = HttpStatus::BadRequest;
 	}
-	_error = HttpStatus::BadRequest;
 }
 
 http::HttpRequestType http::HttpTokenizer::StringToHttpRequestType(std::string requestType)

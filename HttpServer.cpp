@@ -98,7 +98,7 @@ void http::HttpServer::serve()
         ConnHandler(newsock);
     }
 }
-http::HttpServer::HttpServer(int port, std::string ip):tcp::TcpServer(port,ip)
+http::HttpServer::HttpServer(int port, std::string ip):tcp::TcpServer(port,ip),_threadPool(3)
 {
 }
 void http::HttpServer::HandleRoute(http::HttpRequestType type, HttpRoute route)
@@ -113,11 +113,58 @@ void http::HttpServer::HandleRoute(http::HttpRequestType type, HttpRoute route)
 void http::HttpServer::ConnHandler(SOCKET sock)
 {
     tcp::simpleSocket simpleSock(sock);
-    std::string req=simpleSock.read(10000);
-    _threadPool.async([&]() {
-        auto contextfut = _threadPool.async([&]() {return getContextFromReq(req, sock); });
-        _threadPool.async([&]() { contextfut.wait();    contextfut.get().second(contextfut.get().first);    });
-    });
+    std::string req=simpleSock.read(1000);
+    try
+    {
+        _threadPool.async([req,sock,this]() {
+                
+                try
+                {
+                    auto [context, handler] = getContextFromReq(req, sock);
+                    handler(context);
+                }
+                catch (const http::HttpStatus& stat) {
+                    HttpSocket _sock(sock);
+                    switch (stat)
+                    {
+                    case http::HttpStatus::BadRequest:
+                        _sock.bindMsg(stat, HtmlFileReader("Error400.html"));
+                    case http::HttpStatus::NotFound:
+                        _sock.bindMsg(stat, HtmlFileReader("Error404.html"));
+                    default:
+                        break;
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    std::cout << e.what() << '\n';
+                }
+                catch (...) {
+                    std::cout << "error" << '\n';
+                }
+
+                
+            });
+    }
+    catch (const http::HttpStatus& stat) {
+        HttpSocket _sock(sock);
+        switch (stat)
+        {
+        case http::HttpStatus::BadRequest:
+            _sock.bindMsg(stat, HtmlFileReader("Error400.html"));
+        case http::HttpStatus::NotFound:
+            _sock.bindMsg(stat, HtmlFileReader("Error404.html"));
+        default:
+            break;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << e.what() << '\n';
+    }
+    catch (...) {
+        std::cout << "error" << '\n';
+    }
 }
 std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::HttpContext)>> http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
 {
@@ -126,7 +173,7 @@ std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::Htt
     {
         throw reqAsHttpToken.GetError();
     }
-    auto [routeParams, handler] = matchRoute(req, reqAsHttpToken.GetType());
+    auto [routeParams, handler] = matchRoute(reqAsHttpToken.GetRoute(), reqAsHttpToken.GetType());
     return {http::HttpServer::HttpContext(reqAsHttpToken.GetBody(), routeParams, sock), handler};
 }
 //
@@ -160,12 +207,12 @@ http::json::JsonObject http::HttpServer::HttpContext::GetBodyAsJson() const noex
     return json::JsonObject(_body);
 }
 
-void http::HttpServer::HttpContext::sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers)
+void http::HttpServer::HttpContext::sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers) noexcept
 {
     _sock.bindMsg(status, jsonObject, headers);
 }
 
-void http::HttpServer::HttpContext::sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers)
+void http::HttpServer::HttpContext::sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers) noexcept
 {
     _sock.bindMsg(status, htmlfile, headers);
 }

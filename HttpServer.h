@@ -24,6 +24,7 @@ namespace http {
 	
 
 	struct HttpRoute;
+
 	class HttpServer:protected tcp::TcpServer
 	{
 	public:
@@ -41,9 +42,9 @@ namespace http {
 			std::string GetBody()const noexcept;
 			json::JsonObject GetBodyAsJson()const noexcept;
 			
-			void sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers=http::HttpHeaders());
+			void sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers=http::HttpHeaders()) noexcept;
 
-			void sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers=http::HttpHeaders());
+			void sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers=http::HttpHeaders()) noexcept;
 			// alloc aysnc task
 
 			/// <summary>
@@ -54,7 +55,7 @@ namespace http {
 			/// <param name="f">function to alloc to a worker</param>
 			/// <param name="...args">function args</param>
 			/// <returns>future for function sent for alloc</returns>
-			template<class F, class... Args> auto allocTask(F&& f, Args&&... args) const->std::future<decltype(f(args...))>;
+			template<class F, class... Args> auto allocTask(F&& f, Args&&... args) const ->std::future<decltype(f(args...))>;
 		private:
 			std::string _body;
 			std::vector<HttpRouteParam> _params;

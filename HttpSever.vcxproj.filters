@@ -106,5 +106,8 @@
     <None Include="Error400.html">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="Error404.html">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
