@@ -56,7 +56,10 @@ int main() {
 	return 0;*/
 	http::HttpServer server(8080, "127.0.0.1");
 	server.HandleRoute(http::HttpGET, { "/:id",[](http::HttpServer::HttpContext context) {
-		std::cout << context.GetParam("id");
+		std::string id=context.GetParam("id");
+		http::json::JsonObject json;
+		json.insert({ "id",{http::json::JsonType::Integer,id} });
+		context.sendJson(http::HttpStatus::OK, json);
 	} });
 	server.serve();
 }

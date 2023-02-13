@@ -154,7 +154,7 @@ tcp::simpleSocket::simpleSocket(SOCKET socket):_socket(socket)
 
 tcp::simpleSocket::~simpleSocket()
 {
-    closesocket(_socket);
+    //closesocket(_socket);
 }
 
 std::string tcp::simpleSocket::read(int bufferSize)
@@ -163,7 +163,7 @@ std::string tcp::simpleSocket::read(int bufferSize)
     int bytesRead = recv(_socket, buffer, bufferSize, 0);
     if (bytesRead < 0)
     {
-        http::logger.exitWithError("Failed to receive bytes from client socket connection");
+        http::logger.log("Failed to receive bytes from client socket connection");
     }
     std::string ret = buffer;
     return ret;
