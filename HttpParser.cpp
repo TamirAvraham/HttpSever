@@ -1,4 +1,5 @@
 #include "HttpParser.h"
+#include <regex>
 
 http::HttpTokenizer::HttpTokenizer(std::string request)
 {
@@ -25,7 +26,17 @@ http::HttpStatus http::HttpTokenizer::GetError()
 {
 	return _error;
 }
+std::string getFileNameFromRoute(std::string route) {
 
+	size_t lastSlash = route.find_last_of('/');
+	if (lastSlash==std::string::npos)
+	{
+		throw http::HttpStatus::BadRequest;
+	}
+	std::string fileName=route.substr(lastSlash);
+
+	return fileName;
+}
 void http::HttpTokenizer::parse(std::string req)
 {
 	std::stringstream ss(req);
@@ -39,6 +50,18 @@ void http::HttpTokenizer::parse(std::string req)
 	
 
 	_route = route;
+	std::regex cssFileRegex("*.css");
+	std::regex jsFileRegex("*.js");
+	bool isCss = std::regex_match(route, cssFileRegex);
+	if (isCss)
+	{
+		_isCssAndFileName = { isCss,getFileNameFromRoute(route) };
+	}
+	bool isJs = std::regex_match(route, jsFileRegex);
+	if (isJs)
+	{
+		_isJsAndFileName = { isJs,getFileNameFromRoute(route) };
+	}
 	try
 	{
 		_requestType = StringToHttpRequestType(type);

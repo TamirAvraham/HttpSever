@@ -61,6 +61,9 @@ int main() {
 		json.insert({ "id",{http::json::JsonType::Integer,id} });
 		context.sendJson(http::HttpStatus::OK, json);
 	} });
+	server.HandleRoute(http::HttpGET, { "/",[](http::HttpServer::HttpContext context) {
+		context.sendHtml(http::HttpStatus::OK,{"welcomePage.html"});
+	}});
 	server.serve();
 }
 /*

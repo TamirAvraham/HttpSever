@@ -109,5 +109,8 @@
     <None Include="Error404.html">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="welcomePage.css">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

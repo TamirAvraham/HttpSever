@@ -30,6 +30,8 @@ namespace http {
 		std::string _header;
 		std::string _body;
 		std::string _route;
+		std::pair<bool, std::string> _isCssAndFileName;
+		std::pair<bool, std::string> _isJsAndFileName;
 		HttpRequestType _requestType;
 		HttpStatus _error;
 

@@ -129,8 +129,10 @@ void http::HttpServer::ConnHandler(SOCKET sock)
                     {
                     case http::HttpStatus::BadRequest:
                         _sock.bindMsg(stat, HtmlFileReader("Error400.html"));
+                        break;
                     case http::HttpStatus::NotFound:
                         _sock.bindMsg(stat, HtmlFileReader("Error404.html"));
+                        break;
                     default:
                         break;
                     }
