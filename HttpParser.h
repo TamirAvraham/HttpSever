@@ -26,6 +26,8 @@ namespace http {
 		std::string GetRoute();
 		HttpRequestType GetType();
 		HttpStatus GetError();
+		std::pair<bool, std::string> isCss();
+		std::pair<bool, std::string> isJs();
 	private:
 		std::string _header;
 		std::string _body;

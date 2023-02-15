@@ -54,6 +54,11 @@ int main() {
 	std::cout << fut1.get()<<"\n\n\n\n\n"<<fut2.get();
 	pool.cancel();
 	return 0;*/
+//	http::HttpTokenizer token(R"(GET /welcomePage.css HTTP/1.1
+//Host: example.com
+//User-Agent: <User's browser info>
+//Accept: */*)");
+//	std::string fname= token.isCss().second;
 	http::HttpServer server(8080, "127.0.0.1");
 	server.HandleRoute(http::HttpGET, { "/:id",[](http::HttpServer::HttpContext context) {
 		std::string id=context.GetParam("id");
@@ -65,6 +70,8 @@ int main() {
 		context.sendHtml(http::HttpStatus::OK,{"welcomePage.html"});
 	}});
 	server.serve();
+	
+	return 0;
 }
 /*
 * 

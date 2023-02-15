@@ -164,6 +164,7 @@
     <None Include="Error404.html" />
     <None Include="welcomePage.css" />
     <None Include="welcomePage.html" />
+    <None Include="welcomePage.js" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

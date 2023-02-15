@@ -38,16 +38,27 @@ void http::HttpSocket::bindCss(const HttpStatus status, const std::string cssFil
     std::string ret = "HTTP/1.1 ";
     ret += GetStatusLine(status);
     std::cout << ret;
-    ret += "\nContent-Type: text/html";
+    ret += "\nContent-Type: text/css";
         ret += "\nContent-Length: ";
         int length = htmlFile.getFileAsString().length();
         ret += std::to_string(length);
     ret += "\n\n";
     ret += htmlFile.getFileAsString();
-    return ret;
+    write(ret);
 }
 void http::HttpSocket::bindJs(const HttpStatus status, const std::string jsFileName)
 {
+    HtmlFileReader htmlFile(jsFileName);
+    std::string ret = "HTTP/1.1 ";
+    ret += GetStatusLine(status);
+    std::cout << ret;
+    ret += "\nContent-Type: application/javascript";
+    ret += "\nContent-Length: ";
+    int length = htmlFile.getFileAsString().length();
+    ret += std::to_string(length);
+    ret += "\n\n";
+    ret += htmlFile.getFileAsString();
+    write(ret);
 }
 std::string http::HttpSocket::generateHttpResponceFromRequst(HttpStatus status, HtmlFileReader htmlFile, const HttpHeaders headers) const
 {

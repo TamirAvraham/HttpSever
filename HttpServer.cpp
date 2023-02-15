@@ -114,6 +114,7 @@ void http::HttpServer::ConnHandler(SOCKET sock)
 {
     tcp::simpleSocket simpleSock(sock);
     std::string req=simpleSock.read(1000);
+    std::cout << req << '\n';
     try
     {
         _threadPool.async([req,sock,this]() {
@@ -122,6 +123,7 @@ void http::HttpServer::ConnHandler(SOCKET sock)
                 {
                     auto [context, handler] = getContextFromReq(req, sock);
                     handler(context);
+                    closesocket(sock);
                 }
                 catch (const http::HttpStatus& stat) {
                     HttpSocket _sock(sock);
@@ -136,17 +138,20 @@ void http::HttpServer::ConnHandler(SOCKET sock)
                     default:
                         break;
                     }
+                    closesocket(sock);
                 }
                 catch (const std::exception& e)
                 {
                     std::cout << e.what() << '\n';
+                    closesocket(sock);
                 }
                 catch (...) {
                     std::cout << "error" << '\n';
+                    closesocket(sock);
                 }
 
                 
-            });
+        });
     }
     catch (const http::HttpStatus& stat) {
         HttpSocket _sock(sock);
@@ -154,19 +159,25 @@ void http::HttpServer::ConnHandler(SOCKET sock)
         {
         case http::HttpStatus::BadRequest:
             _sock.bindMsg(stat, HtmlFileReader("Error400.html"));
+            break;
         case http::HttpStatus::NotFound:
             _sock.bindMsg(stat, HtmlFileReader("Error404.html"));
+            break;
         default:
             break;
         }
+        closesocket(sock);
     }
     catch (const std::exception& e)
     {
         std::cout << e.what() << '\n';
+        closesocket(sock);
     }
     catch (...) {
         std::cout << "error" << '\n';
+        closesocket(sock);
     }
+    
 }
 std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::HttpContext)>> http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
 {
@@ -174,6 +185,16 @@ std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::Htt
     if (reqAsHttpToken.GetError() != HttpStatus::OK)
     {
         throw reqAsHttpToken.GetError();
+    }
+    else if (reqAsHttpToken.isJs().first)
+    {
+        HttpSocket(sock).bindJs(HttpStatus::OK,reqAsHttpToken.isJs().second);
+        throw HttpStatus::OK;
+    }
+    else if (reqAsHttpToken.isCss().first)
+    {
+        HttpSocket(sock).bindCss(HttpStatus::OK, reqAsHttpToken.isCss().second);
+        throw HttpStatus::OK;
     }
     auto [routeParams, handler] = matchRoute(reqAsHttpToken.GetRoute(), reqAsHttpToken.GetType());
     return {http::HttpServer::HttpContext(reqAsHttpToken.GetBody(), routeParams, sock), handler};

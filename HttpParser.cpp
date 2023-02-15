@@ -26,6 +26,14 @@ http::HttpStatus http::HttpTokenizer::GetError()
 {
 	return _error;
 }
+std::pair<bool, std::string> http::HttpTokenizer::isCss()
+{
+	return _isCssAndFileName;
+}
+std::pair<bool, std::string> http::HttpTokenizer::isJs()
+{
+	return _isJsAndFileName;
+}
 std::string getFileNameFromRoute(std::string route) {
 
 	size_t lastSlash = route.find_last_of('/');
@@ -34,7 +42,7 @@ std::string getFileNameFromRoute(std::string route) {
 		throw http::HttpStatus::BadRequest;
 	}
 	std::string fileName=route.substr(lastSlash);
-
+	fileName = fileName.substr(1);
 	return fileName;
 }
 void http::HttpTokenizer::parse(std::string req)
@@ -50,8 +58,8 @@ void http::HttpTokenizer::parse(std::string req)
 	
 
 	_route = route;
-	std::regex cssFileRegex("*.css");
-	std::regex jsFileRegex("*.js");
+	std::regex cssFileRegex("^(.*\.(?:css))$");
+	std::regex jsFileRegex("^(.*\.(?:js))$");
 	bool isCss = std::regex_match(route, cssFileRegex);
 	if (isCss)
 	{
