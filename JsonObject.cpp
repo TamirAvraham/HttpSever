@@ -1,6 +1,6 @@
 #include "JsonObject.h"
 
-http::json::JsonObject::JsonObject():_jsonMap()
+http::json::JsonObject::JsonObject():_jsonMap(),_changed(true)
 {
 }
 
@@ -40,7 +40,7 @@ http::json::JsonObject& http::json::JsonObject::operator=(const std::map<std::st
 	return *this;
 }
 
-http::json::JsonValue http::json::JsonObject::operator[](const std::string name)const
+http::json::JsonValue http::json::JsonObject::operator[](const std::string& name)const
 {
 	JsonValue ret;
 	try {
@@ -52,10 +52,15 @@ http::json::JsonValue http::json::JsonObject::operator[](const std::string name)
 	return ret;
 }
 
-void http::json::JsonObject::insert(JsonKeyValuePair keyValuePair)
+void http::json::JsonObject::insert(JsonKeyValuePair keyValuePair) noexcept
 {
 	_jsonMap.insert(keyValuePair);
 	_changed = true;
+}
+
+void http::json::JsonObject::set(const std::string& keyName, http::json::JsonValue val)
+{
+	_jsonMap[keyName] = val;
 }
 
 std::string http::json::JsonObject::ToString()
