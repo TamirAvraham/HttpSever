@@ -42,9 +42,8 @@ namespace http {
 			std::string GetBody()const noexcept;
 			json::JsonObject GetBodyAsJson()const noexcept;
 			
-			void sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers=http::HttpHeaders()) noexcept;
-
-			void sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers=http::HttpHeaders()) noexcept;
+			void sendJson(http::HttpStatus status, http::json::JsonObject& jsonObject, http::HttpHeaders headers=http::HttpHeaders()) noexcept;
+			void sendHtml(http::HttpStatus status, http::FileReader& htmlfile, http::HttpHeaders headers=http::HttpHeaders()) noexcept;
 			// alloc aysnc task
 
 			/// <summary>
@@ -63,10 +62,10 @@ namespace http {
 		};
 
 	private:
-		void ConnHandler(SOCKET sock);
-		std::pair<http::HttpServer::HttpContext, std::function<void(http::HttpServer::HttpContext)>> getContextFromReq(std::string req, SOCKET sock);
+		void ConnHandler();
+		std::pair<http::HttpServer::HttpContext, std::function<void(http::HttpServer::HttpContext&)>> getContextFromReq(std::string req, SOCKET sock);
 		std::pair<bool,std::vector<HttpRouteParam>> getParamsFromRoute(std::string route, std::string templateRoute)const;
-		std::pair<std::vector<HttpRouteParam>,std::function<void(HttpServer::HttpContext)>> matchRoute(std::string gotRoute, http::HttpRequestType reqType);
+		std::pair<std::vector<HttpRouteParam>,std::function<void(HttpServer::HttpContext&)>> matchRoute(std::string gotRoute, http::HttpRequestType reqType);
 		
 		/*std::vector<http::HttpRouteParam> getRouteParams(std::string route,std::string parttern)const;*/
 		std::map<HttpRequestType,std::vector<HttpRoute>> _routes;
@@ -87,10 +86,11 @@ namespace http {
 		/// <param name="routeTemplate"> the route as a string route params need to have a : and a name to get them from http context example:
 		/// "api/:userId/get" in this route the :userId will be a route param and be receved using HttpContext::getParam("userId")</param>
 		/// <param name="handler">user function to be called when using the route</param>
-		HttpRoute(std::string routeTemplate, std::function<void(HttpServer::HttpContext)> handler);
+		HttpRoute(std::string routeTemplate, std::function<void(HttpServer::HttpContext&)> handler);
 		std::string _route;
-		std::function<void(HttpServer::HttpContext)> _handler;
+		std::function<void(HttpServer::HttpContext&)> _handler;
 	};
+	using HttpContext = HttpServer::HttpContext;
 }
 
 

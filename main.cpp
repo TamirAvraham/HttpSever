@@ -3,6 +3,7 @@
 #include "ThreadPool.h"
 #include "HttpSocket.h"
 #include "HttpServer.h"
+#include "HtmlFileReader.h"
 #include <iostream>
 
 void testFuncForTCPServer(SOCKET sock) {
@@ -59,7 +60,7 @@ int main() {
 //User-Agent: <User's browser info>
 //Accept: */*)");
 //	std::string fname= token.isCss().second;
-	http::HttpServer server(8080, "127.0.0.1");
+	/*http::HttpServer server(8080, "127.0.0.1");
 	server.HandleRoute(http::HttpGET, { "/:id",[](http::HttpServer::HttpContext context) {
 		std::string id=context.GetParam("id");
 		http::json::JsonObject json;
@@ -69,8 +70,16 @@ int main() {
 	server.HandleRoute(http::HttpGET, { "/",[](http::HttpServer::HttpContext context) {
 		context.sendHtml(http::HttpStatus::OK,{"welcomePage.html"});
 	}});
+	server.serve();*/
+	std::string fname = "welcomePage.html";
+	http::HtmlFileReader reader(fname);
+	http::HttpServer server(8080, "127.0.0.1");
+	server.HandleRoute(http::HttpGET, { "/",[&reader](http::HttpContext& context) {
+		context.sendHtml(http::HttpStatus::OK,reader);
+		} });
+
 	server.serve();
-	
+
 	return 0;
 }
 /*

@@ -52,13 +52,13 @@ http::json::JsonValue http::json::JsonObject::operator[](const std::string& name
 	return ret;
 }
 
-void http::json::JsonObject::insert(JsonKeyValuePair keyValuePair) noexcept
+void http::json::JsonObject::insert(JsonKeyValuePair keyValuePair) 
 {
 	_jsonMap.insert(keyValuePair);
 	_changed = true;
 }
 
-void http::json::JsonObject::set(const std::string& keyName, http::json::JsonValue val)
+void http::json::JsonObject::set(const std::string& keyName, http::json::JsonValue val) noexcept
 {
 	_jsonMap[keyName] = val;
 }

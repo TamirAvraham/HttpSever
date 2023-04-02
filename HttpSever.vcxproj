@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlockingQueue.cpp" />
+    <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="HtmlFileReader.cpp" />
     <ClCompile Include="HttpParser.cpp" />
     <ClCompile Include="HttpServer.cpp" />
@@ -145,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
+    <ClInclude Include="FileReader.h" />
     <ClInclude Include="HtmlFileReader.h" />
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />

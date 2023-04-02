@@ -76,7 +76,7 @@ std::pair<bool, std::vector<http::HttpRouteParam>> http::HttpServer::getParamsFr
 
     return {true,params};
 }
-std::pair<std::vector<http::HttpRouteParam>, std::function<void(http::HttpServer::HttpContext)>> http::HttpServer::matchRoute(std::string gotRoute,http::HttpRequestType reqType)
+std::pair<std::vector<http::HttpRouteParam>, std::function<void(http::HttpServer::HttpContext&)>> http::HttpServer::matchRoute(std::string gotRoute,http::HttpRequestType reqType)
 {
     for (auto route:_routes.at(reqType))
     {
@@ -93,12 +93,10 @@ void http::HttpServer::serve()
    
     while (true)
     {
-        SOCKET newsock;
-        acceptConnection(newsock);
-        ConnHandler(newsock);
+        ConnHandler();
     }
 }
-http::HttpServer::HttpServer(int port, std::string ip):tcp::TcpServer(port,ip),_threadPool(3)
+http::HttpServer::HttpServer(int port, std::string ip):tcp::TcpServer(port,ip),_threadPool(50)
 {
 }
 void http::HttpServer::HandleRoute(http::HttpRequestType type, HttpRoute route)
@@ -110,76 +108,52 @@ void http::HttpServer::HandleRoute(http::HttpRequestType type, HttpRoute route)
     }
     _routes.at(type).push_back(route);
 }
-void http::HttpServer::ConnHandler(SOCKET sock)
+void http::HttpServer::ConnHandler()
 {
-    tcp::simpleSocket simpleSock(sock);
-    std::string req=simpleSock.read(1000);
-    std::cout << req << '\n';
-    try
-    {
-        _threadPool.async([req,sock,this]() {
-                
-                try
-                {
-                    auto [context, handler] = getContextFromReq(req, sock);
-                    handler(context);
-                    closesocket(sock);
-                }
-                catch (const http::HttpStatus& stat) {
-                    HttpSocket _sock(sock);
-                    switch (stat)
-                    {
-                    case http::HttpStatus::BadRequest:
-                        _sock.bindMsg(stat, HtmlFileReader("Error400.html"));
-                        break;
-                    case http::HttpStatus::NotFound:
-                        _sock.bindMsg(stat, HtmlFileReader("Error404.html"));
-                        break;
-                    default:
-                        break;
-                    }
-                    closesocket(sock);
-                }
-                catch (const std::exception& e)
-                {
-                    std::cout << e.what() << '\n';
-                    closesocket(sock);
-                }
-                catch (...) {
-                    std::cout << "error" << '\n';
-                    closesocket(sock);
-                }
-
-                
-        });
-    }
-    catch (const http::HttpStatus& stat) {
-        HttpSocket _sock(sock);
-        switch (stat)
+    
+    _threadPool.async([this]() {
+        SOCKET sock;
+        acceptConnection(sock);
+        tcp::simpleSocket simpleSock(sock);
+        std::string req = simpleSock.read(1000);
+        std::cout << req << '\n';
+        try
         {
-        case http::HttpStatus::BadRequest:
-            _sock.bindMsg(stat, HtmlFileReader("Error400.html"));
-            break;
-        case http::HttpStatus::NotFound:
-            _sock.bindMsg(stat, HtmlFileReader("Error404.html"));
-            break;
-        default:
-            break;
+            auto [context, handler] = getContextFromReq(req, sock);
+            handler(context);
+            closesocket(sock);
         }
-        closesocket(sock);
-    }
-    catch (const std::exception& e)
-    {
-        std::cout << e.what() << '\n';
-        closesocket(sock);
-    }
-    catch (...) {
-        std::cout << "error" << '\n';
-        closesocket(sock);
-    }
+        catch (const http::HttpStatus& stat) {
+            HttpSocket _sock(sock);
+            switch (stat)
+            {
+            case http::HttpStatus::BadRequest:
+                _sock.bindMsg(stat, FileReader("Error400.html"));
+                break;
+            case http::HttpStatus::NotFound:
+                _sock.bindMsg(stat, FileReader("Error404.html"));
+                break;
+            default:
+                break;
+            }
+            closesocket(sock);
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << e.what() << '\n';
+            closesocket(sock);
+        }
+        catch (...) {
+            std::cout << "error" << '\n';
+            closesocket(sock);
+        }
+
+    });
+       
+   
     
 }
-std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::HttpContext)>> http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
+std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::HttpContext&)>> http::HttpServer::getContextFromReq(std::string req, SOCKET sock)
 {
     http::HttpTokenizer reqAsHttpToken(req);
     if (reqAsHttpToken.GetError() != HttpStatus::OK)
@@ -197,7 +171,8 @@ std::pair<http::HttpServer::HttpContext,std::function<void(http::HttpServer::Htt
         throw HttpStatus::OK;
     }
     auto [routeParams, handler] = matchRoute(reqAsHttpToken.GetRoute(), reqAsHttpToken.GetType());
-    return {http::HttpServer::HttpContext(reqAsHttpToken.GetBody(), routeParams, sock), handler};
+    http::HttpServer::HttpContext con(reqAsHttpToken.GetBody(), routeParams, sock);
+    return {con, handler};
 }
 //
 //std::vector<http::HttpRouteParam> http::HttpServer::getRouteParams(std::string route, std::string parttern) const
@@ -230,16 +205,18 @@ http::json::JsonObject http::HttpServer::HttpContext::GetBodyAsJson() const noex
     return json::JsonObject(_body);
 }
 
-void http::HttpServer::HttpContext::sendJson(http::HttpStatus status, http::json::JsonObject jsonObject, http::HttpHeaders headers) noexcept
+void http::HttpServer::HttpContext::sendJson(http::HttpStatus status, http::json::JsonObject& jsonObject, http::HttpHeaders headers) noexcept
 {
     _sock.bindMsg(status, jsonObject, headers);
 }
 
-void http::HttpServer::HttpContext::sendHtml(http::HttpStatus status, http::HtmlFileReader htmlfile, http::HttpHeaders headers) noexcept
+
+
+void http::HttpServer::HttpContext::sendHtml(http::HttpStatus status, http::FileReader& htmlfile, http::HttpHeaders headers) noexcept
 {
     _sock.bindMsg(status, htmlfile, headers);
 }
 
-http::HttpRoute::HttpRoute(std::string routeTemplate, std::function<void(HttpServer::HttpContext)> handler):_route(routeTemplate),_handler(handler)
+http::HttpRoute::HttpRoute(std::string routeTemplate, std::function<void(HttpServer::HttpContext&)> handler):_route(routeTemplate),_handler(handler)
 {
 }

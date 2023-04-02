@@ -1,6 +1,6 @@
 #include "HttpSocket.h"
 #include <string>
-void http::HttpSocket::bindMsg(const HttpStatus status, const json::JsonObject json, const HttpHeaders headers) 
+void http::HttpSocket::bindMsg(const HttpStatus status, const json::JsonObject& json, const HttpHeaders headers) 
 {
     std::string msg = generateHttpResponceFromRequst(status, json, headers);
     write(msg);
@@ -28,13 +28,13 @@ std::string http::HttpSocket::generateHttpResponceFromRequst(HttpStatus status, 
     ret += jsonAsString;
     return ret;
 }
-void http::HttpSocket::bindMsg(const HttpStatus status, const HtmlFileReader htmlFile, const HttpHeaders headers)
+void http::HttpSocket::bindMsg(const HttpStatus status, const FileReader& htmlFile, const HttpHeaders headers)
 {
     write(generateHttpResponceFromRequst(status, htmlFile, headers));
 }
 void http::HttpSocket::bindCss(const HttpStatus status, const std::string cssFileName)
 {
-    HtmlFileReader htmlFile(cssFileName);
+    FileReader htmlFile(cssFileName);
     std::string ret = "HTTP/1.1 ";
     ret += GetStatusLine(status);
     std::cout << ret;
@@ -48,7 +48,7 @@ void http::HttpSocket::bindCss(const HttpStatus status, const std::string cssFil
 }
 void http::HttpSocket::bindJs(const HttpStatus status, const std::string jsFileName)
 {
-    HtmlFileReader htmlFile(jsFileName);
+    FileReader htmlFile(jsFileName);
     std::string ret = "HTTP/1.1 ";
     ret += GetStatusLine(status);
     std::cout << ret;
@@ -60,7 +60,7 @@ void http::HttpSocket::bindJs(const HttpStatus status, const std::string jsFileN
     ret += htmlFile.getFileAsString();
     write(ret);
 }
-std::string http::HttpSocket::generateHttpResponceFromRequst(HttpStatus status, HtmlFileReader htmlFile, const HttpHeaders headers) const
+std::string http::HttpSocket::generateHttpResponceFromRequst(HttpStatus status, FileReader htmlFile, const HttpHeaders headers) const
 {
     std::string ret = "HTTP/1.1 ";
     ret += GetStatusLine(status);
