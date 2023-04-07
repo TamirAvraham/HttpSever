@@ -4,84 +4,51 @@
 #include "HttpSocket.h"
 #include "HttpServer.h"
 #include "HtmlFileReader.h"
+#include "Dog.h"
+#include "CreateDogHandlerFunc.h"
 #include <iostream>
 
-void testFuncForTCPServer(SOCKET sock) {
-	http::HttpSocket mySocket(sock);
-	const char* jsonStr = R"(
-{
-    "name": "John Smith",
-    "age": 35,
-    "isEmployed": true,
-    "address": {
-        "street": "123 Main St",
-        "city": "Anytown",
-        "state": "Anystate",
-        "zipcode": 12345
-    },
-    "phoneNumbers": [
-        {"type": "home", "number": "555-555-5555"},
-        {"type": "work", "number": "555-555-5556"}
-    ]
-})";
-	/*"{\"data1\":[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}],\"data2\":{\"test\":[6,7,8]}}"*/
-	http::json::JsonObject json = std::string(jsonStr);
-	mySocket.bindMsg(http::HttpStatus::OK,json);
-	
+/*
+TODO:
+db:
+create dog model DONE
+api:
+create api route for adding a dog 
+create api route to get all dogs as json
+create api route to get a spesific dog deatails by id
 
-}
+front:
+create the website
 
+lib:
+
+bugs:
+
+
+*/
 int main() {
-
-	/*tcp::TcpServer server(8080, "127.0.0.1");
+	http::HttpRoute createDogRoute({ "/api/create" }, { CreateDogHandlerFunc });
+	http::HttpRoute getDogRoute({ "/api/get_dog/:id" }, { getDogHandlerFunc });
+	http::HttpRoute getAllDogsRoute({ "/api/get_all_dogs" }, { getAllDogsHandlerFunc });
+	http::HttpRoute adpotDogRoute({ "/api/adopt_dog/:id" }, { adoptDog });
+	http::HtmlFileReader homePageReader("home_page.htm");
+	http::HtmlFileReader addDogReader("add_dog.html");
+	http::HtmlFileReader dogDeatsReader("dog_details.html");
 	
-	while (true)
-	{
-		server.HandleConection(testFuncForTCPServer);
-	}
-	
-	http::json::JsonValue jv(http::json::JsonType::Array, "[1,2.2,true,\"str\",[1,2,3],{ uwu:\"testing\"}]\n");*/
-	
+	homePageReader.optimizeFileForSending();
+	addDogReader.optimizeFileForSending();
+	dogDeatsReader.optimizeFileForSending();
 
-
-	/*ThreadPool pool(10);
-	auto fut1 = pool.async([]() {
-		std::this_thread::sleep_for(std::chrono::seconds(3));
-		return 8 * 8; 
-	});
-	auto fut2 = pool.async([]() { return 9 * 8; });
-	fut1.wait();
-	fut2.wait();
-	std::cout << fut1.get()<<"\n\n\n\n\n"<<fut2.get();
-	pool.cancel();
-	return 0;*/
-//	http::HttpTokenizer token(R"(GET /welcomePage.css HTTP/1.1
-//Host: example.com
-//User-Agent: <User's browser info>
-//Accept: */*)");
-//	std::string fname= token.isCss().second;
-	/*http::HttpServer server(8080, "127.0.0.1");
-	server.HandleRoute(http::HttpGET, { "/:id",[](http::HttpServer::HttpContext context) {
-		std::string id=context.GetParam("id");
-		http::json::JsonObject json;
-		json.insert({ "id",{http::json::JsonType::Integer,id} });
-		context.sendJson(http::HttpStatus::OK, json);
-	} });
-	server.HandleRoute(http::HttpGET, { "/",[](http::HttpServer::HttpContext context) {
-		context.sendHtml(http::HttpStatus::OK,{"welcomePage.html"});
-	}});
-	server.serve();*/
-	std::string fname = "welcomePage.html";
-	http::HtmlFileReader reader(fname);
-	http::HttpServer server(8080, "127.0.0.1");
-	server.HandleRoute(http::HttpGET, { "/",[&reader](http::HttpContext& context) {
-		context.sendHtml(http::HttpStatus::OK,reader);
-		} });
-
+	http::HttpServer server(8080,"127.0.0.1");
+	server.HandleRoute(http::HttpPOST, createDogRoute);
+	server.HandleRoute(http::HttpGET, getDogRoute);
+	server.HandleRoute(http::HttpGET, getAllDogsRoute);
+	server.HandleRoute(http::HttpDELETE, adpotDogRoute);
+	server.ServeHtmlPage("/", homePageReader);
+	server.ServeHtmlPage("/dog_details/:id", dogDeatsReader);
+	server.ServeHtmlPage("/add_dog", addDogReader);
 	server.serve();
+
 
 	return 0;
 }
-/*
-* 
-*/

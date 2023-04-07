@@ -85,13 +85,25 @@ std::string http::json::JsonObject::ToString()
 		ret += '\"';
 		ret += jsonKeyValue.first;
 		ret += "\" : ";
-		ret += jsonValue.getValueAsString();
-		if (!(jsonValue.type() == JsonType::Array || JsonType::Object == jsonValue.type())) 
+		const std::string valAsString=jsonValue.string_value();
+		if (valAsString.empty())
 		{
-			ret += ',';
+			ret += "null";
 		}
+		else if (jsonValue.type()==JsonType::String)
+		{
+			ret += '\"';
+			ret += valAsString;
+			ret += '\"';
+		}
+		else
+		{
+			ret += valAsString;
+		}
+		ret += ',';
 		ret += "\n ";
 	}
+	ret = ret.substr(0, ret.length() - 3);
 	_asString = ret;
 	ret += "\n}";
 	return ret;

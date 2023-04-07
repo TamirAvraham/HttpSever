@@ -1,6 +1,11 @@
 #pragma once
 #include <string>
 #include <iostream>
+
+/*
+* TODO:
+* improve string detection by looking for " and '
+*/
 namespace http {
 	namespace json {
 		enum class JsonType:char {
@@ -9,7 +14,8 @@ namespace http {
 			Real,
 			Boolean,
 			Array,
-			Object
+			Object,
+			Null
 		};
 		JsonType getTypeFromString(std::string stringAsValue);
 	}
