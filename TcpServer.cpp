@@ -107,14 +107,12 @@ void tcp::TcpServer::startListen()
     {
        http::logger. exitWithError("Socket listen failed");
     }
-    std::ostringstream ss;
+    
     PWSTR str=nullptr;
     InetNtop(_socketAddress.sin_family, &_socketAddress.sin_addr.s_addr, str, 50);
-    ss << "\n*** Listening on ADDRESS: "
-        << str
-        << " PORT: " << ntohs(_socketAddress.sin_port)
-        << " ***\n\n";
-    http::logger.log(ss.str());
+    std::wcout << "IP: " << str << '\n';
+    std::cout << "Port" << ntohs(_socketAddress.sin_port)<< '\n';
+    
 }
 
 void tcp::TcpServer::acceptConnection(SOCKET& new_socket)
@@ -122,14 +120,10 @@ void tcp::TcpServer::acceptConnection(SOCKET& new_socket)
     new_socket = accept(_ListenSocket, (sockaddr*)&_socketAddress,&_socketAddress_len);
     if (new_socket < 0)
     {
-        std::ostringstream ss;
+        
         PWSTR str = nullptr;
         InetNtop(_socketAddress.sin_family, &_socketAddress.sin_addr.s_addr, str, 50);
-        ss <<
-            "Server failed to accept incoming connection from ADDRESS: "
-            << str << "; PORT: "
-            << ntohs(_socketAddress.sin_port);
-        http::logger.exitWithError(ss.str());
+        http::logger.exitWithError("cant connect to client");
     }
 }
 

@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlockingQueue.cpp" />
+    <ClCompile Include="DBExeptions.cpp" />
     <ClCompile Include="DocDB.cpp" />
     <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="HtmlFileReader.cpp" />
@@ -147,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
+    <ClInclude Include="DBExeptions.hpp" />
     <ClInclude Include="DocDB.h" />
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="HtmlFileReader.h" />

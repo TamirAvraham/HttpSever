@@ -2,6 +2,7 @@
 #include "JsonObject.h"
 #include <list>
 #include "rocksdb/db.h"
+#include "DBExeptions.hpp"
 namespace DocDB
 {
 	class DB;
@@ -11,6 +12,7 @@ namespace DocDB
 		
 	public:
 		std::string getCollectionName()const noexcept;
+		std::string getName()const noexcept;
 		bool updateInDB()const;
 	protected:
 		Document(const std::string& name, const std::string& collectionName);
@@ -22,7 +24,7 @@ namespace DocDB
 
 		std::string _name;
 		std::string _collectionName;
-		http::json::JsonObject _data;
+		
 	};
 
 	class Collection
@@ -52,13 +54,15 @@ namespace DocDB
 	class DB {
 	public:
 		Collection getCollection(const std::string& collectionName);
+		Collection getCollection(const std::string&& collectionName);
 		Collection createCollection(const std::string& collectionName);
+		Collection createCollection(const std::string&& collectionName);
 		bool deleteCollection(const std::string& collectionName);
 		
 	private:
 		friend Collection;
 		rocksdb::DB* _db;
-		Document getDoc(const rocksdb::ColumnFamilyHandle* handle,const std::string& docName)const noexcept(false);
+		Document getDoc(const std::string& collectionName, rocksdb::ColumnFamilyHandle* handle, const std::string& docName)const noexcept(false);
 		void updateDoc(const Document& doc);
 
 

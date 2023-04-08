@@ -54,6 +54,15 @@
     <ClCompile Include="HttpSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DocDB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DBExeptions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HttpServer.h">
@@ -98,6 +107,15 @@
     <ClInclude Include="HttpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DocDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DBExeptions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="welcomePage.html">
@@ -112,5 +130,8 @@
     <None Include="welcomePage.css">
       <Filter>Source Files</Filter>
     </None>
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
+    <None Include="welcomePage.js" />
   </ItemGroup>
 </Project>
