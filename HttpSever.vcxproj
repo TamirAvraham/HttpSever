@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlockingQueue.cpp" />
+    <ClCompile Include="DocDB.cpp" />
     <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="HtmlFileReader.cpp" />
     <ClCompile Include="HttpParser.cpp" />
@@ -146,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
+    <ClInclude Include="DocDB.h" />
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="HtmlFileReader.h" />
     <ClInclude Include="HttpParser.h" />
@@ -162,6 +164,8 @@
     <ClInclude Include="ThreadSafeQueue.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
     <None Include="Error400.html" />
     <None Include="Error404.html" />
     <None Include="welcomePage.css" />
