@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlockingQueue.cpp" />
+    <ClCompile Include="Collection.cpp" />
     <ClCompile Include="DBExeptions.cpp" />
     <ClCompile Include="DocDB.cpp" />
     <ClCompile Include="FileReader.cpp" />
@@ -148,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
+    <ClInclude Include="Collection.h" />
     <ClInclude Include="DBExeptions.hpp" />
     <ClInclude Include="DocDB.h" />
     <ClInclude Include="FileReader.h" />

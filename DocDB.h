@@ -8,32 +8,31 @@ public:
     // Constructor with reference to the path of the database
     explicit DB(const std::string& path) noexcept(false) {
         openEnv(path);
-        openDb();
+        
     }
 
     // Constructor with rvalue reference to the path of the database
     explicit DB(std::string&& path) noexcept(false) {
         openEnv(std::move(path));
-        openDb();
+        
     }
 
     // Constructor with just a std::string path to the database
     explicit DB(const char* path) noexcept(false) {
         openEnv(path);
-        openDb();
+        
     }
 
     // Default constructor with a default path to the database
     explicit DB() noexcept(false) {
         const std::string defaultPath = "./myLMDB";
         openEnv(defaultPath);
-        openDb();
+        
     }
 
 private:
     MDB_env* _env = nullptr;
-    MDB_dbi* _db;
-    MDB_txn* _txn;
+    
 
 
 
@@ -70,18 +69,20 @@ private:
             throw std::runtime_error("Failed to open LMDB environment");
         }
     }
-    inline void openDb() noexcept(false) {
-            constexpr auto kDbName = "testdb";
+    inline struct { MDB_dbi& _d; MDB_txn* _t; } openDb(std::string& name) noexcept(false) {
+        MDB_dbi _db;
+        MDB_txn* _txn;
             const int flags = MDB_CREATE;
             if (mdb_txn_begin(_env, nullptr, 0, &_txn) != 0) {
                 throw std::runtime_error("Failed to begin LMDB transaction");
             }
-            if (mdb_dbi_open(_txn, kDbName, flags, &_db) != 0) {
+            if (mdb_dbi_open(_txn, name.c_str(), flags, &_db) != 0) {
                 throw std::runtime_error("Failed to open LMDB database");
             }
             if (mdb_txn_commit(_txn) != 0) {
                 throw std::runtime_error("Failed to commit LMDB transaction");
             }
-        
+            return { _db,_txn };
     }
+    
 };
