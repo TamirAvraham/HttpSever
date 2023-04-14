@@ -63,6 +63,9 @@
     <ClCompile Include="DBExeptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Collection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HttpServer.h">
@@ -116,6 +119,9 @@
     <ClInclude Include="DBExeptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Collection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="welcomePage.html">
@@ -133,5 +139,6 @@
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="welcomePage.js" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

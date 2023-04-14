@@ -1,21 +1,25 @@
-#include "lmdb/lmdb.h"
+
+#include <lmdb.h>
 #include <stdexcept>
 #include <string>
 class DB;
 class Collection {
     
-protected :
+public :
     // Constructor with rvalue reference to the name of the collection
-    explicit Collection(std::string&& name, MDB_dbi& db, MDB_env* env) noexcept(false);
+    explicit Collection(const std::string && name, MDB_dbi& db, MDB_env* env) noexcept(false);
 
     // Constructor with reference to the name of the collection
     explicit Collection(const std::string& name, MDB_dbi& db, MDB_env* env) noexcept(false);
-
+    
     // Constructor with just a std::string name for the collection
     explicit Collection(const char* name, MDB_dbi& db, MDB_env* env) noexcept(false);
 
     // Destructor to close transaction
     ~Collection() noexcept(false);
+
+
+    std::string getName()const noexcept;
 
 private:
     MDB_dbi& _db;
@@ -23,11 +27,11 @@ private:
     std::string _name;
 
 
-    friend class DB;
+    
 };
 
 // Implementation of rvalue reference constructor
-inline Collection::Collection(std::string&& name, MDB_dbi& db,MDB_env* env) noexcept(false) : _db(db), _name(name) {
+inline Collection::Collection(const std::string && name, MDB_dbi& db,MDB_env* env) noexcept(false) : _db(db), _name(name) {
     
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
         throw std::runtime_error("Failed to begin LMDB transaction");
@@ -40,6 +44,8 @@ inline Collection::Collection(const std::string& name, MDB_dbi& db, MDB_env* env
         throw std::runtime_error("Failed to begin LMDB transaction");
     }
 }
+
+
 
 // Implementation of const char* constructor
 inline Collection::Collection(const char* name, MDB_dbi& db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
@@ -55,4 +61,10 @@ inline Collection::~Collection() noexcept(false) {
             throw std::runtime_error("Failed to commit LMDB transaction");
         }
     }
+    
+}
+
+inline std::string Collection::getName() const noexcept
+{
+    return _name;
 }
