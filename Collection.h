@@ -2,6 +2,7 @@
 #include <lmdb.h>
 #include <stdexcept>
 #include <string>
+#include "Document.h"
 class DB;
 class Collection {
     
@@ -20,6 +21,12 @@ public :
 
 
     std::string getName()const noexcept;
+
+    Document getDocumnet()const noexcept;
+    Document createDocumnet()const noexcept;
+    bool deleteDocument()const noexcept;
+    Document updateDocumnet()const noexcept;
+
 
 private:
     MDB_dbi& _db;

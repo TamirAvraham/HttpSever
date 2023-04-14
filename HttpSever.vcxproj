@@ -133,6 +133,7 @@
     <ClCompile Include="Collection.cpp" />
     <ClCompile Include="DBExeptions.cpp" />
     <ClCompile Include="DocDB.cpp" />
+    <ClCompile Include="Document.cpp" />
     <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="HtmlFileReader.cpp" />
     <ClCompile Include="HttpParser.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Collection.h" />
     <ClInclude Include="DBExeptions.hpp" />
     <ClInclude Include="DocDB.h" />
+    <ClInclude Include="Document.h" />
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="HtmlFileReader.h" />
     <ClInclude Include="HttpParser.h" />
