@@ -51,7 +51,7 @@ private:
     MDB_txn* _txn;
     std::string _name;
 
-
+    void initTxn();
     
 };
 
@@ -63,33 +63,4 @@ inline Collection::Collection(const std::string && name, MDB_dbi& db,MDB_env* en
     }
 }
 
-// Implementation of reference constructor
-inline Collection::Collection(const std::string& name, MDB_dbi& db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
-    if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw std::runtime_error("Failed to begin LMDB transaction");
-    }
-}
 
-
-
-// Implementation of const char* constructor
-inline Collection::Collection(const char* name, MDB_dbi& db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
-    if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw std::runtime_error("Failed to begin LMDB transaction");
-    }
-}
-
-// Implementation of destructor
-inline Collection::~Collection() noexcept(false) {
-    if (_txn != nullptr) {
-        if (mdb_txn_commit(_txn) != 0) {
-            throw std::runtime_error("Failed to commit LMDB transaction");
-        }
-    }
-    
-}
-
-inline std::string Collection::getName() const noexcept
-{
-    return _name;
-}

@@ -20,7 +20,7 @@ Document::Document(const char* name) noexcept :_name(name)
     set("name", _name);
 }
 
-Document::Document(const std::string& name, const http::json::JsonObject& data) :_name(name),JsonObject(data)
+Document::Document(const std::string& name, const http::json::JsonObject& data)noexcept :_name(name),JsonObject(data)
 {
     set("name", name);
 }
