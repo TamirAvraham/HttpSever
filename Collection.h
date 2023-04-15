@@ -22,11 +22,29 @@ public :
 
     std::string getName()const noexcept;
 
-    Document getDocumnet()const noexcept;
-    Document createDocumnet()const noexcept;
-    bool deleteDocument()const noexcept;
-    Document updateDocumnet()const noexcept;
+    Document getDocument(const std::string&& docName)const;
+    Document getDocument(const std::string& docName)const;
+    Document getDocument(const char* docName)const;
 
+    Document createDocument(const std::string&& docName)const noexcept;
+    Document createDocument(const std::string& docName)const noexcept;
+    Document createDocument(const char* docName)const noexcept;
+    Document createDocument(const std::string&& docName,const http::json::JsonObject&& docContent)const noexcept;
+    Document createDocument(const std::string&& docName,const http::json::JsonObject& docContent)const noexcept;
+    Document createDocument(const std::string& docName,const http::json::JsonObject&& docContent)const noexcept;
+    Document createDocument(const std::string& docName,const http::json::JsonObject& docContent)const noexcept;
+    Document createDocument(const char* docName,const http::json::JsonObject&& docContent)const noexcept;
+    Document createDocument(const char* docName,const http::json::JsonObject& docContent)const noexcept;
+    
+
+
+    bool deleteDocument(const std::string&& docName)const noexcept;
+    bool deleteDocument(const std::string& docName)const noexcept;
+    bool deleteDocument(const char* docName)const noexcept;
+
+    Document updateDocument(const Document& docToUpdate)const noexcept;
+    
+    
 
 private:
     MDB_dbi& _db;
