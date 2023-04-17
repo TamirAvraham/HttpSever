@@ -38,28 +38,55 @@ namespace db {
                 return DbException::what();
             }
         };
-        class AlreadyFoundExcpetion : DbException {
+        class AlreadyExistsExcpetion : DbException {
         public:
-            AlreadyFoundExcpetion(const std::string& message) :DbException(message) {} AlreadyFoundExcpetion(const char* message) :DbException(message) {} const char* what() const noexcept override {
+            AlreadyExistsExcpetion(const std::string& message) :DbException(message) {} AlreadyExistsExcpetion(const char* message) :DbException(message) {} const char* what() const noexcept override {
                 return DbException::what();
             }
         };
         namespace doc {
+
+            /// <summary>
+            /// Document exceptions
+            /// </summary>
+
             class DocumentNotFoundException : NotFoundException {
             public:
                 DocumentNotFoundException(const std::string& message) :NotFoundException(message) {} DocumentNotFoundException(const char* message) :NotFoundException(message) {} const char* what() const noexcept override {
                     return NotFoundException::what();
                 }
             };
-            class DocumentAlreadyFoundExcpetion : AlreadyFoundExcpetion {
+            class DocumentAlreadyExistsExcpetion : AlreadyExistsExcpetion {
             public:
-                DocumentAlreadyFoundExcpetion(const std::string& message) :AlreadyFoundExcpetion(message) {} DocumentAlreadyFoundExcpetion(const char* message) :AlreadyFoundExcpetion(message) {} const char* what() const noexcept override {
-                    return AlreadyFoundExcpetion::what();
+                DocumentAlreadyExistsExcpetion(const std::string& message) :AlreadyExistsExcpetion(message) {} DocumentAlreadyExistsExcpetion(const char* message) :AlreadyExistsExcpetion(message) {} const char* what() const noexcept override {
+                    return AlreadyExistsExcpetion::what();
                 }
             };
             class DocumentCantOpenException : CantOpenException {
             public: DocumentCantOpenException(const std::string& message) :CantOpenException(message) {} DocumentCantOpenException(const char* message) :CantOpenException(message) {} const char* what() const noexcept override {
                 return CantOpenException::what();
+            }
+            };
+
+            /// <summary>
+            /// Collection exceptions
+            /// </summary>
+
+            class CollectionNotFoundException : NotFoundException {
+            public: CollectionNotFoundException(const std::string& message) :NotFoundException(message) {} CollectionNotFoundException(const char* message) :NotFoundException(message) {} const char* what() const noexcept override {
+                return NotFoundException::what();
+            }
+            };
+
+            class CollectionCantOpenException : CantOpenException {
+            public: CollectionCantOpenException(const std::string& message) :CantOpenException(message) {} CollectionCantOpenException(const char* message) :CantOpenException(message) {} const char* what() const noexcept override {
+                return CantOpenException::what();
+            }
+            };
+
+            class CollectionAlreadyExistsExcpetion : AlreadyExistsExcpetion {
+            public: CollectionAlreadyExistsExcpetion(const std::string& message) :AlreadyExistsExcpetion(message) {} CollectionAlreadyExistsExcpetion(const char* message) :AlreadyExistsExcpetion(message) {} const char* what() const noexcept override {
+                return AlreadyExistsExcpetion::what();
             }
             };
 
