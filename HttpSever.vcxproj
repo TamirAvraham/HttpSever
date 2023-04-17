@@ -151,7 +151,6 @@
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
     <ClInclude Include="Collection.h" />
-    <ClInclude Include="DbErrors.h" />
     <ClInclude Include="DBExeptions.hpp" />
     <ClInclude Include="DocDB.h" />
     <ClInclude Include="Document.h" />
