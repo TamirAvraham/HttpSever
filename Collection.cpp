@@ -1,6 +1,15 @@
 #include "Collection.h"
+
+
+Collection::Collection(const std::string&& name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
+
+    if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
+        throw std::runtime_error("Failed to begin LMDB transaction");
+    }
+}
+
 // Implementation of reference constructor
-inline Collection::Collection(const std::string& name, MDB_dbi& db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
+Collection::Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
         throw std::runtime_error("Failed to begin LMDB transaction");
     }
@@ -9,14 +18,14 @@ inline Collection::Collection(const std::string& name, MDB_dbi& db, MDB_env* env
 
 
 // Implementation of const char* constructor
-inline Collection::Collection(const char* name, MDB_dbi& db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
+Collection::Collection(const char* name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
         throw std::runtime_error("Failed to begin LMDB transaction");
     }
 }
 
 // Implementation of destructor
-inline Collection::~Collection() noexcept(false) {
+Collection::~Collection() noexcept(false) {
     if (_txn != nullptr) {
         if (mdb_txn_commit(_txn) != 0) {
             throw std::runtime_error("Failed to commit LMDB transaction");
@@ -87,7 +96,7 @@ Document Collection::createDocument(const std::string&& docName) const noexcept
 {
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
-    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal);
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal,0);
     if (result!=MDB_SUCCESS)
     {
         //throw db error

@@ -1,8 +1,8 @@
+#pragma once
 #include <lmdb.h>
 #include <filesystem>
 #include <string>
 #include <stdexcept>
-
 #include "Collection.h"
 
 constexpr int defultMemSize = 10485760;

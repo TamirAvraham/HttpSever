@@ -1,20 +1,20 @@
-
+#pragma once
 #include <lmdb.h>
 #include <stdexcept>
 #include <string>
 #include "Document.h"
-class DB;
+
 class Collection {
     
 public :
     // Constructor with rvalue reference to the name of the collection
-    explicit Collection(const std::string && name, MDB_dbi& db, MDB_env* env) noexcept(false);
+    explicit Collection(const std::string && name, MDB_dbi db, MDB_env* env) noexcept(false);
 
     // Constructor with reference to the name of the collection
-    explicit Collection(const std::string& name, MDB_dbi& db, MDB_env* env) noexcept(false);
+    explicit Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexcept(false);
     
     // Constructor with just a std::string name for the collection
-    explicit Collection(const char* name, MDB_dbi& db, MDB_env* env) noexcept(false);
+    explicit Collection(const char* name, MDB_dbi db, MDB_env* env) noexcept(false);
 
     // Destructor to close transaction
     ~Collection() noexcept(false);
@@ -47,7 +47,7 @@ public :
     
 
 private:
-    MDB_dbi& _db;
+    MDB_dbi _db;
     MDB_txn* _txn;
     std::string _name;
 
@@ -56,11 +56,6 @@ private:
 };
 
 // Implementation of rvalue reference constructor
-inline Collection::Collection(const std::string && name, MDB_dbi& db,MDB_env* env) noexcept(false) : _db(db), _name(name) {
-    
-    if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw std::runtime_error("Failed to begin LMDB transaction");
-    }
-}
+
 
 

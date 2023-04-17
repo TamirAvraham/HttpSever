@@ -63,7 +63,7 @@ Collection DB::openCollection(const std::string& name)
 Collection DB::openCollection(const std::string&& name)
 {
     auto [db, txn] = openDb(name);
-    Collection ret(name, db, _env);
+    Collection ret(name.c_str(), db, _env);
     if (txn) {
         mdb_txn_abort(txn);
     }
@@ -197,7 +197,7 @@ inline void DB::saveSettings()
 
 void DB::incMemory() 
 {
-    int rc = mdb_env_set_mapsize(_env,(long)(_currentMemory+_settings._MemUpdateSize));
+    int rc = mdb_env_set_mapsize(_env,(_currentMemory+_settings._MemUpdateSize));
     if (rc != MDB_SUCCESS) {
         mdb_env_close(_env);
         throw std::runtime_error("Failed to set LMDB map size");
