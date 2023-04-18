@@ -3,6 +3,12 @@
 using http::json::JsonValue;
 namespace http {
 	namespace json {
+
+
+		/*TODO:
+		* improve the TOString Chasing
+		*/
+
 		class JsonObject
 		{
 		public:
@@ -17,11 +23,11 @@ namespace http {
 			JsonValue& operator[](const std::string& name)const;
 			virtual void insert(JsonKeyValuePair keyValuePair);
 			virtual void set(const std::string& keyName,http::json::JsonValue val) noexcept;
-			std::string ToString();
+			std::string ToString()const;
 
 		private:
 			std::map<std::string, http::json::JsonValue> _jsonMap;
-			std::string _asString;
+			mutable std::string _asString;
 			bool _changed;
 		};
 	}

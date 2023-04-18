@@ -26,23 +26,22 @@ public :
     Document getDocument(const std::string& docName)const;
     Document getDocument(const char* docName)const;
 
-    Document createDocument(const std::string&& docName)const noexcept;
-    Document createDocument(const std::string& docName)const noexcept;
-    Document createDocument(const char* docName)const noexcept;
-    Document createDocument(const std::string&& docName,const http::json::JsonObject&& docContent)const noexcept;
-    Document createDocument(const std::string&& docName,const http::json::JsonObject& docContent)const noexcept;
-    Document createDocument(const std::string& docName,const http::json::JsonObject&& docContent)const noexcept;
-    Document createDocument(const std::string& docName,const http::json::JsonObject& docContent)const noexcept;
-    Document createDocument(const char* docName,const http::json::JsonObject&& docContent)const noexcept;
-    Document createDocument(const char* docName,const http::json::JsonObject& docContent)const noexcept;
+    Document createDocument(const std::string&& docName)const ;
+    Document createDocument(const std::string& docName)const ;
+    Document createDocument(const char* docName)const ;
+    Document createDocument(const std::string&& docName,const http::json::JsonObject&& docContent)const ;
+    Document createDocument(const std::string&& docName,const http::json::JsonObject& docContent)const ;
+    Document createDocument(const std::string& docName,const http::json::JsonObject&& docContent)const ;
+    Document createDocument(const std::string& docName,const http::json::JsonObject& docContent)const ;
+    Document createDocument(const char* docName,const http::json::JsonObject&& docContent)const ;
+    Document createDocument(const char* docName,const http::json::JsonObject& docContent)const ;
     
-
 
     bool deleteDocument(const std::string&& docName)const noexcept;
     bool deleteDocument(const std::string& docName)const noexcept;
     bool deleteDocument(const char* docName)const noexcept;
 
-    Document updateDocument(const Document& docToUpdate)const noexcept;
+    Document updateDocument(const Document& docToUpdate)const;
     
     
 
@@ -51,7 +50,7 @@ private:
     MDB_txn* _txn;
     std::string _name;
 
-    void initTxn();
+    void handleErrors(int errorCode);
     
 };
 

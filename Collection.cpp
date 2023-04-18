@@ -18,14 +18,14 @@
 Collection::Collection(const std::string&& name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
 
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw db::exceptions::CantOpenException("cant open collection");
+        throw db::exceptions::doc::CollectionCantOpenException("cant open collection");
     }
 }
 
 // Implementation of reference constructor
 Collection::Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw db::exceptions::CantOpenException("cant open collection");
+        throw db::exceptions::doc::CollectionCantOpenException("cant open collection");
     }
 }
 
@@ -34,7 +34,7 @@ Collection::Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexce
 // Implementation of const char* constructor
 Collection::Collection(const char* name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw db::exceptions::CantOpenException("cant open collection");
+        throw db::exceptions::doc::CollectionCantOpenException("cant open collection");
     }
 }
 
@@ -109,7 +109,7 @@ Document Collection::getDocument(const char* docName) const
 }
 
 
-Document Collection::createDocument(const std::string&& docName) const noexcept
+Document Collection::createDocument(const std::string&& docName) const 
 {
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
@@ -119,6 +119,159 @@ Document Collection::createDocument(const std::string&& docName) const noexcept
         throw db::exceptions::DbException("cant create doc");
     }
     return Document(docName);
+}
+
+Document Collection::createDocument(const std::string& docName) const 
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    MDB_val jsonStrAsMDBVal{ 0, nullptr };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName);
+}
+
+Document Collection::createDocument(const char* docName) const 
+{
+    std::string docNameAsString = docName;
+    MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
+    MDB_val jsonStrAsMDBVal{ 0, nullptr };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName);
+}
+
+Document Collection::createDocument(const std::string&& docName, const http::json::JsonObject&& docContent) const 
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    auto tempJsonAsStrVal = docContent.ToString();
+    MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data())};
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName);
+}
+
+Document Collection::createDocument(const std::string&& docName, const http::json::JsonObject& docContent) const 
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    auto tempJsonAsStrVal = docContent.ToString();
+    MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName);
+}
+
+Document Collection::createDocument(const std::string& docName, const http::json::JsonObject&& docContent) const 
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    auto tempJsonAsStrVal = docContent.ToString();
+    MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName);
+}
+
+Document Collection::createDocument(const std::string& docName, const http::json::JsonObject& docContent) const 
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    auto tempJsonAsStrVal = docContent.ToString();
+    MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName);
+}
+
+Document Collection::createDocument(const char* docName, const http::json::JsonObject&& docContent) const 
+{
+
+    std::string docNameAsString = docName;
+    MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
+    auto tempJsonAsStrVal = docContent.ToString();
+    MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName,docContent);
+}
+
+Document Collection::createDocument(const char* docName, const http::json::JsonObject& docContent) const 
+{
+    std::string docNameAsString = docName;
+    MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
+    auto tempJsonAsStrVal = docContent.ToString();
+    MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
+    int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
+    if (result != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant create doc");
+    }
+    return Document(docName,docContent);
+}
+
+bool Collection::deleteDocument(const std::string&& docName) const noexcept
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    int result = mdb_del(_txn, _db, &docNameAsMDBKey, nullptr);
+    if (result != MDB_SUCCESS) {
+        return false;
+    }
+    return true;
+}
+
+bool Collection::deleteDocument(const std::string& docName) const noexcept
+{
+    MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
+    int result = mdb_del(_txn, _db, &docNameAsMDBKey, nullptr);
+    if (result != MDB_SUCCESS) {
+        return false;
+    }
+    return true;
+}
+
+bool Collection::deleteDocument(const char* docName) const noexcept
+{
+    std::string docNameAsString = docName;
+    MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
+    int result = mdb_del(_txn, _db, &docNameAsMDBKey, nullptr);
+    if (result != MDB_SUCCESS) {
+        return false;
+    }
+    return true;
+}
+
+Document Collection::updateDocument(const Document& docToUpdate) const 
+{
+    std::string docName = docToUpdate.getName();
+    std::string docValueAsString = docToUpdate.ToString();
+    MDB_val mdbKey{ docName.size(), const_cast<char*>(docName.data())};
+    MDB_val mdbValue{ docValueAsString.size(), const_cast<char*>(docValueAsString.data()) };
+
+    int result = mdb_put(_txn, _db, &mdbKey, &mdbValue, MDB_CURRENT);
+
+    if (result != MDB_SUCCESS) {
+        throw db::exceptions::DbException("error in updating a doc");
+    }
+
+    return docToUpdate;
 }
 
 

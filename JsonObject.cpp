@@ -63,7 +63,7 @@ void http::json::JsonObject::set(const std::string& keyName, http::json::JsonVal
 	_jsonMap[keyName] = val;
 }
 
-std::string http::json::JsonObject::ToString()
+std::string http::json::JsonObject::ToString() const
 {
 	if (_asString!="/\\"&&!_changed)
 	{
