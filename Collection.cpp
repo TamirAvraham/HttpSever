@@ -15,7 +15,7 @@
 
 
 
-Collection::Collection(const std::string&& name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
+Collection::Collection(const std::string&& name, MDB_dbi db, MDB_env* env, CollectionRequriedFunctions  reqFunctions) noexcept(false) : _db(db), _name(name),_requriedFunctions(reqFunctions) {
 
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
         throw db::exceptions::doc::CollectionCantOpenException("cant open collection");
@@ -23,7 +23,7 @@ Collection::Collection(const std::string&& name, MDB_dbi db, MDB_env* env) noexc
 }
 
 // Implementation of reference constructor
-Collection::Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
+Collection::Collection(const std::string& name, MDB_dbi db, MDB_env* env, CollectionRequriedFunctions reqFunctions) noexcept(false) : _db(db), _name(name), _requriedFunctions(reqFunctions) {
     if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
         throw db::exceptions::doc::CollectionCantOpenException("cant open collection");
     }
@@ -32,10 +32,8 @@ Collection::Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexce
 
 
 // Implementation of const char* constructor
-Collection::Collection(const char* name, MDB_dbi db, MDB_env* env) noexcept(false) : _db(db), _name(name) {
-    if (mdb_txn_begin(env, nullptr, 0, &_txn) != 0) {
-        throw db::exceptions::doc::CollectionCantOpenException("cant open collection");
-    }
+Collection::Collection(const char* name, MDB_dbi db, MDB_env* env, CollectionRequriedFunctions reqFunctions) noexcept(false) : _db(db), _name(name), _requriedFunctions(reqFunctions) {
+    
 }
 
 // Implementation of destructor
@@ -55,6 +53,7 @@ inline std::string Collection::getName() const noexcept
 
 Document Collection::getDocument(const std::string&& docName) const
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
     int result = mdb_get(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal);
@@ -68,11 +67,14 @@ Document Collection::getDocument(const std::string&& docName) const
         throw db::exceptions::doc::DocumentCantOpenException("cant open doc");
     }
     auto json_str = std::string{ static_cast<const char*>(jsonStrAsMDBVal.mv_data) };
+    mdb_txn_abort(_txn);
+    _txn = nullptr;
     return Document(docName, json_str);
 }
 
 Document Collection::getDocument(const std::string& docName) const
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
     int result = mdb_get(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal);
@@ -86,11 +88,14 @@ Document Collection::getDocument(const std::string& docName) const
         throw db::exceptions::doc::DocumentCantOpenException("cant open doc");
     }
     auto json_str = std::string{ static_cast<const char*>(jsonStrAsMDBVal.mv_data) };
+    mdb_txn_abort(_txn);
+    _txn = nullptr;
     return Document(docName, json_str);
 }
 
 Document Collection::getDocument(const char* docName) const
 {
+    _txn = _requriedFunctions._getTxn();
     std::string docNameAsStr = docName;
     MDB_val docNameAsMDBKey{ docNameAsStr.size(), const_cast<char*>(docNameAsStr.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
@@ -105,12 +110,15 @@ Document Collection::getDocument(const char* docName) const
         throw db::exceptions::doc::DocumentCantOpenException("cant open doc");
     }
     auto json_str = std::string{ static_cast<const char*>(jsonStrAsMDBVal.mv_data) };
+    mdb_txn_abort(_txn);
+    _txn = nullptr;
     return Document(docName, json_str);
 }
 
 
 Document Collection::createDocument(const std::string&& docName) const 
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
     int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal,0);
@@ -123,6 +131,7 @@ Document Collection::createDocument(const std::string&& docName) const
 
 Document Collection::createDocument(const std::string& docName) const 
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
     int result = mdb_put(_txn, _db, &docNameAsMDBKey, &jsonStrAsMDBVal, 0);
@@ -135,6 +144,7 @@ Document Collection::createDocument(const std::string& docName) const
 
 Document Collection::createDocument(const char* docName) const 
 {
+    _txn = _requriedFunctions._getTxn();
     std::string docNameAsString = docName;
     MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
     MDB_val jsonStrAsMDBVal{ 0, nullptr };
@@ -148,6 +158,7 @@ Document Collection::createDocument(const char* docName) const
 
 Document Collection::createDocument(const std::string&& docName, const http::json::JsonObject&& docContent) const 
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     auto tempJsonAsStrVal = docContent.ToString();
     MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data())};
@@ -161,6 +172,7 @@ Document Collection::createDocument(const std::string&& docName, const http::jso
 
 Document Collection::createDocument(const std::string&& docName, const http::json::JsonObject& docContent) const 
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     auto tempJsonAsStrVal = docContent.ToString();
     MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
@@ -174,6 +186,7 @@ Document Collection::createDocument(const std::string&& docName, const http::jso
 
 Document Collection::createDocument(const std::string& docName, const http::json::JsonObject&& docContent) const 
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     auto tempJsonAsStrVal = docContent.ToString();
     MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
@@ -187,6 +200,7 @@ Document Collection::createDocument(const std::string& docName, const http::json
 
 Document Collection::createDocument(const std::string& docName, const http::json::JsonObject& docContent) const 
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     auto tempJsonAsStrVal = docContent.ToString();
     MDB_val jsonStrAsMDBVal{ tempJsonAsStrVal.size(), const_cast<char*>(tempJsonAsStrVal.data()) };
@@ -200,7 +214,7 @@ Document Collection::createDocument(const std::string& docName, const http::json
 
 Document Collection::createDocument(const char* docName, const http::json::JsonObject&& docContent) const 
 {
-
+    _txn = _requriedFunctions._getTxn();
     std::string docNameAsString = docName;
     MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
     auto tempJsonAsStrVal = docContent.ToString();
@@ -215,6 +229,7 @@ Document Collection::createDocument(const char* docName, const http::json::JsonO
 
 Document Collection::createDocument(const char* docName, const http::json::JsonObject& docContent) const 
 {
+    _txn = _requriedFunctions._getTxn();
     std::string docNameAsString = docName;
     MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
     auto tempJsonAsStrVal = docContent.ToString();
@@ -229,6 +244,7 @@ Document Collection::createDocument(const char* docName, const http::json::JsonO
 
 bool Collection::deleteDocument(const std::string&& docName) const noexcept
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     int result = mdb_del(_txn, _db, &docNameAsMDBKey, nullptr);
     if (result != MDB_SUCCESS) {
@@ -239,6 +255,7 @@ bool Collection::deleteDocument(const std::string&& docName) const noexcept
 
 bool Collection::deleteDocument(const std::string& docName) const noexcept
 {
+    _txn = _requriedFunctions._getTxn();
     MDB_val docNameAsMDBKey{ docName.size(), const_cast<char*>(docName.data()) };
     int result = mdb_del(_txn, _db, &docNameAsMDBKey, nullptr);
     if (result != MDB_SUCCESS) {
@@ -249,6 +266,7 @@ bool Collection::deleteDocument(const std::string& docName) const noexcept
 
 bool Collection::deleteDocument(const char* docName) const noexcept
 {
+    _txn = _requriedFunctions._getTxn();
     std::string docNameAsString = docName;
     MDB_val docNameAsMDBKey{ docNameAsString.size(), const_cast<char*>(docNameAsString.data()) };
     int result = mdb_del(_txn, _db, &docNameAsMDBKey, nullptr);
@@ -260,6 +278,7 @@ bool Collection::deleteDocument(const char* docName) const noexcept
 
 Document Collection::updateDocument(const Document& docToUpdate) const 
 {
+    _txn = _requriedFunctions._getTxn();
     std::string docName = docToUpdate.getName();
     std::string docValueAsString = docToUpdate.ToString();
     MDB_val mdbKey{ docName.size(), const_cast<char*>(docName.data())};
@@ -270,8 +289,31 @@ Document Collection::updateDocument(const Document& docToUpdate) const
     if (result != MDB_SUCCESS) {
         throw db::exceptions::DbException("error in updating a doc");
     }
+    result = mdb_txn_commit(_txn);
+    if (result)
+    {
 
+    }
     return docToUpdate;
+}
+template<class F, class... Args>
+void Collection::handleErrors(int errorCode, std::function<F(Args...)> function)
+{
+    switch (errorCode)
+    {
+    case MDB_BAD_TXN:
+        //refresh function
+    case MDB_BAD_DBI:
+        throw db::exceptions::DbException("error with collection");
+    case MDB_NOTFOUND:
+    case MDB_PAGE_NOTFOUND:
+        throw db::exceptions::doc::DocumentNotFoundException("cant find document");
+    case MDB_MAP_FULL:
+    case MDB_MAP_RESIZED:
+        _requriedFunctions._incMemorey();
+    default:
+        break;
+    }
 }
 
 

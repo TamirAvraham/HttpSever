@@ -1,20 +1,26 @@
 #pragma once
 #include <lmdb.h>
 #include <stdexcept>
+#include <functional>
 #include <string>
 #include "Document.h"
+#include "DBExeptions.hpp"
 
+struct CollectionRequriedFunctions
+{
+    std::function<MDB_txn* ()> _getTxn;
+    std::function<void()> _incMemorey;
+};
 class Collection {
-    
 public :
     // Constructor with rvalue reference to the name of the collection
-    explicit Collection(const std::string && name, MDB_dbi db, MDB_env* env) noexcept(false);
+    explicit Collection(const std::string && name, MDB_dbi db, MDB_env* env, CollectionRequriedFunctions  reqFunctions) noexcept(false);
 
     // Constructor with reference to the name of the collection
-    explicit Collection(const std::string& name, MDB_dbi db, MDB_env* env) noexcept(false);
+    explicit Collection(const std::string& name, MDB_dbi db, MDB_env* env, CollectionRequriedFunctions reqFunctions) noexcept(false);
     
     // Constructor with just a std::string name for the collection
-    explicit Collection(const char* name, MDB_dbi db, MDB_env* env) noexcept(false);
+    explicit Collection(const char* name, MDB_dbi db, MDB_env* env, CollectionRequriedFunctions reqFunctions) noexcept(false);
 
     // Destructor to close transaction
     ~Collection() noexcept(false);
@@ -47,10 +53,11 @@ public :
 
 private:
     MDB_dbi _db;
-    MDB_txn* _txn;
+    mutable MDB_txn* _txn;
     std::string _name;
-
-    void handleErrors(int errorCode);
+    CollectionRequriedFunctions _requriedFunctions;
+    template<class F,class... Args>
+    void handleErrors(int errorCode,std::function<F(Args...)> function);
     
 };
 

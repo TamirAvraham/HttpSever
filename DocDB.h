@@ -3,9 +3,10 @@
 #include <filesystem>
 #include <string>
 #include <stdexcept>
+#include <shared_mutex>
 #include "Collection.h"
 
-constexpr int defultMemSize = 10485760;
+constexpr int defultMemSize = 1024*1024*10; //10MB
 constexpr int defultMemUpdateSize = defultMemSize;
 
 /**
@@ -25,6 +26,8 @@ struct DbSettings
 
 
 class DB {
+    using rlock = std::shared_lock<std::shared_mutex>;
+
 public:
     //ctors
 
@@ -42,9 +45,20 @@ public:
     /*TODO:
     * add Collection Not Found error
     */
-    Collection openCollection(const std::string name);
     Collection openCollection(const std::string& name);
     Collection openCollection(const std::string&& name);
+
+
+    Collection createCollection(const std::string& collectionName);
+    Collection createCollection(const std::string&& collectionName);
+
+    bool deleteCollection(const std::string& CollectionName);
+    bool deleteCollection(const std::string&& CollectionName);
+
+    //mutex related
+
+    std::shared_mutex getTransactionMutex;
+
 
 private:
 
@@ -54,24 +68,25 @@ private:
 
     //private function to open a db and a txn for it
 
-    inline  std::pair<MDB_dbi&, MDB_txn*> openDb(const std::string& name)const noexcept(false);
+    inline  MDB_txn* openDb(const std::string& name, MDB_dbi* db, int flag=0)const noexcept(false);
     
     //fields
 
-    MDB_env* _env = nullptr;
+    mutable MDB_env* _env = nullptr;
     DbSettings _settings;
     long _currentMemory;
-
-
+    std::string _path;
+    mutable std::shared_mutex _operationMutex;
     //ctors settings helpers
 
     inline void readDbSettings();
     inline void saveSettings();
-
-
+    inline void updateSettings();
+    MDB_txn* getTxn() const;
     //runtime settings related
-
+    void setCollections(int numOfCollections);
     void incMemory();
     void incCollections();
     void decCollections();
+    inline bool doesValueExist(const std::string& valKey, MDB_dbi* db)const;
 };

@@ -1,5 +1,5 @@
 #include "DocDB.h"
-
+#include <functional>
 
 
 
@@ -34,46 +34,68 @@ DbSettings DB::setSettings(DbSettings settings) noexcept
     _settings = settings;
     if (_settings._saveSettingsInDBAfterChange)
     {
-        saveSettings();
+        updateSettings();
     }
     return DbSettings();
 }
 
-Collection DB::openCollection(const std::string name) 
-{
-
-    auto [db,txn] = openDb(name);
-    Collection ret(name, db, _env);
-    if (txn) {
-        mdb_txn_abort(txn);
-    }
-    return ret;
-}
 
 Collection DB::openCollection(const std::string& name)
 {
-    auto [db, txn] = openDb(name);
-    Collection ret(name, db, _env);
-    if (txn) {
-        mdb_txn_abort(txn);
-    }
+    MDB_dbi db;
+    auto txn = openDb(name,&db);
+    
+    Collection ret(name, db, _env,{std::bind(&DB::getTxn,this),std::bind(&DB::incMemory,this)});
+    
     return ret;
 }
 
 Collection DB::openCollection(const std::string&& name)
 {
-    auto [db, txn] = openDb(name);
-    Collection ret(name.c_str(), db, _env);
-    if (txn) {
-        mdb_txn_abort(txn);
-    }
+    MDB_dbi db;
+    auto txn = openDb(name, &db);
+    Collection ret(name, db, _env, { std::bind(&DB::getTxn,this),std::bind(&DB::incMemory,this) });
     return ret;
+}
+
+Collection DB::createCollection(const std::string& collectionName)
+{
+    incCollections();
+    MDB_dbi db;
+    auto txn = openDb(collectionName, &db,MDB_CREATE);
+    
+    Collection ret(collectionName, db, _env, { std::bind(&DB::getTxn,this),std::bind(&DB::incMemory,this) });
+    
+    return ret;
+}
+
+Collection DB::createCollection(const std::string&& collectionName)
+{
+    incCollections();
+    MDB_dbi db;
+    auto txn = openDb(collectionName, &db, MDB_CREATE);
+    Collection ret(collectionName, db, _env, { std::bind(&DB::getTxn,this),std::bind(&DB::incMemory,this) });
+    return ret;
+}
+
+bool DB::deleteCollection(const std::string& CollectionName)
+{
+    decCollections();
+    return false;
+}
+
+bool DB::deleteCollection(const std::string&& CollectionName)
+{
+    decCollections();
+    return false;
 }
 
 void DB::openEnv(const std::string& path, DbSettings& settings) noexcept(false) {
     //creating base env
+    _path=path;
+    bool save = false;
     int rc = mdb_env_create(&_env);
-    if (rc != MDB_SUCCESS) {
+    if (rc != MDB_SUCCESS||_env==nullptr) {
         throw std::runtime_error("Failed to create LMDB environment");
     }
     _settings = settings;
@@ -83,7 +105,7 @@ void DB::openEnv(const std::string& path, DbSettings& settings) noexcept(false) 
         mdb_env_close(_env);
         throw std::runtime_error("Failed to set LMDB map size");
     }
-
+    
     rc = mdb_env_set_maxdbs(_env, _settings._NumberOfCollections+1); 
     if (rc != MDB_SUCCESS) {
         mdb_env_close(_env);
@@ -91,20 +113,24 @@ void DB::openEnv(const std::string& path, DbSettings& settings) noexcept(false) 
     }
 
     // Create directory for the database if it does not exist
-    const std::filesystem::path dirPath = std::filesystem::path(path).parent_path();
+    
+    const std::filesystem::path dirPath = std::filesystem::path(path);
     if (!std::filesystem::exists(dirPath)) {
         std::filesystem::create_directories(dirPath);
         //creating settings in it
-        if (_settings._saveSettingsInDBAfterChange)
-        {
-            saveSettings();
-        }
+        save = _settings._saveSettingsInDBAfterChange;
+        
     }
+
 
     rc = mdb_env_open(_env, path.c_str(), MDB_WRITEMAP | MDB_CREATE, 0664);
     if (rc != MDB_SUCCESS) {
         mdb_env_close(_env);
         throw std::runtime_error("Failed to open LMDB environment");
+    }
+    if (save)
+    {
+        saveSettings();
     }
     //loading settings from db
     if (_settings._readSettingsFromDb)
@@ -116,37 +142,47 @@ void DB::openEnv(const std::string& path, DbSettings& settings) noexcept(false) 
             throw std::runtime_error("Failed to set LMDB map size");
 
         }
-        rc = mdb_env_set_maxdbs(_env, _settings._NumberOfCollections + 1);
-        if (rc != MDB_SUCCESS) {
-            mdb_env_close(_env);
-            throw std::runtime_error("Failed to set LMDB max number of named databases");
-        }
         
     }
+    _currentMemory = _settings._startMemorySize;
 }
 
-std::pair<MDB_dbi&, MDB_txn*> DB::openDb(const std::string& name) const noexcept(false) {
-    MDB_dbi db;
-    MDB_txn* txn;
-    const int flags = MDB_CREATE;
-    if (mdb_txn_begin(_env, nullptr, 0, &txn) != 0) {
+MDB_txn* DB::openDb(const std::string& name, MDB_dbi* db, int flag) const noexcept(false) {
+    
+    MDB_txn* txn = nullptr;
+    const int flags = flag;
+    int res = 0;
+
+    res = mdb_txn_begin(_env, nullptr, 0, &txn);
+    if (res != MDB_SUCCESS) {
         throw std::runtime_error("Failed to begin LMDB transaction");
     }
-    if (mdb_dbi_open(txn, name.c_str(), flags, &db) != 0) {
+    if (txn == nullptr) {
+        throw std::runtime_error("Failed to initialize LMDB transaction");
+    }
+
+    res = mdb_dbi_open(txn, name.c_str(), flags, db);
+    if (res != MDB_SUCCESS) {
+        mdb_txn_abort(txn);
         throw std::runtime_error("Failed to open LMDB database");
     }
-    if (mdb_txn_commit(txn) != 0) {
+
+    res = mdb_txn_commit(txn);
+    if (res != MDB_SUCCESS) {
         throw std::runtime_error("Failed to commit LMDB transaction");
     }
-    return { db,txn };
+    txn = getTxn();
+    return txn;
 }
+
+
 
 
 inline void DB::readDbSettings()
 {
     std::string settingsName = "dbsettings";
-
-    auto [settingsDbi, settingsTxn] = openDb(settingsName);
+    MDB_dbi settingsDbi;
+    auto settingsTxn = openDb(settingsName,&settingsDbi);
 
     MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
     MDB_val settingsValue{ 0, nullptr };
@@ -162,30 +198,35 @@ inline void DB::readDbSettings()
 
     if (settingsTxn) {
         mdb_txn_abort(settingsTxn);
+        mdb_dbi_close(_env, settingsDbi);
     }
 }
 
 
 inline void DB::saveSettings()
 {
+    std::cout << "settings saved" << std::endl;
     if (!_settings._saveSettingsInDBAfterChange) {
         return;
     }
 
     std::string settingsName = "dbsettings";
-
-    auto [settingsDbi, settingsTxn] = openDb(settingsName);
+    MDB_dbi settingsDbi;
+    auto settingsTxn = openDb(settingsName, &settingsDbi,MDB_CREATE);
 
     MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
     MDB_val settingsValue{ sizeof(DbSettings), const_cast<DbSettings*>(&_settings) };
 
-    int rc = mdb_put(settingsTxn, settingsDbi, &settingsKey, &settingsValue, 0);
+    int rc = mdb_put(settingsTxn, settingsDbi, &settingsKey, &settingsValue,MDB_APPEND);
+    
     if (rc != MDB_SUCCESS) {
+        std::cout << "Failed to commit transaction: " + std::string(mdb_strerror(rc));
         throw std::runtime_error("Failed to save database settings: " + std::string(mdb_strerror(rc)));
     }
 
     rc = mdb_txn_commit(settingsTxn);
     if (rc != MDB_SUCCESS) {
+        std::cout << "Failed to commit transaction: " + std::string(mdb_strerror(rc));
         throw std::runtime_error("Failed to commit transaction: " + std::string(mdb_strerror(rc)));
     }
 
@@ -195,7 +236,96 @@ inline void DB::saveSettings()
     }
 }
 
-void DB::incMemory() 
+inline void DB::updateSettings()
+{
+    if (!_settings._saveSettingsInDBAfterChange) {
+        return;
+    }
+
+    std::string settingsName = "dbsettings";
+    
+    MDB_dbi settingsDbi;
+    auto settingsTxn = openDb(settingsName, &settingsDbi, MDB_CREATE);
+
+    MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
+    MDB_val settingsValue{ sizeof(DbSettings), const_cast<DbSettings*>(&_settings) };
+    {
+        mdb_txn_abort(settingsTxn);
+        std::string set = "settings";
+        bool valexist = doesValueExist(set, &settingsDbi);
+        std::cout << valexist << std::endl;
+    }
+    
+    int rc = mdb_put(settingsTxn, settingsDbi, &settingsKey, &settingsValue, MDB_CURRENT);
+    if (rc != MDB_SUCCESS) {
+        mdb_txn_abort(settingsTxn);
+        mdb_dbi_close(_env, settingsDbi);
+        std::cout << "Failed to commit transaction: " + std::string(mdb_strerror(rc));
+        throw std::runtime_error("Failed to save database settings: " + std::string(mdb_strerror(rc)));
+    }
+
+    rc = mdb_txn_commit(settingsTxn);
+    if (rc != MDB_SUCCESS) {
+        mdb_txn_abort(settingsTxn);
+        mdb_dbi_close(_env, settingsDbi);
+        std::cout << "Failed to commit transaction: " + std::string(mdb_strerror(rc));
+        throw std::runtime_error("Failed to commit transaction: " + std::string(mdb_strerror(rc)));
+    }
+
+    if (settingsTxn)
+    {
+        mdb_txn_abort(settingsTxn);
+        mdb_dbi_close(_env,settingsDbi);
+    }
+}
+
+MDB_txn* DB::getTxn() const
+{
+    rlock lock(_operationMutex);
+    MDB_txn* txn = nullptr;
+    int res = -1;
+    res = mdb_txn_begin(_env, nullptr, 0, &txn);
+    if (res != MDB_SUCCESS) {
+        throw std::runtime_error("Failed to begin LMDB transaction");
+    }
+    if (txn == nullptr) {
+        throw std::runtime_error("Failed to initialize LMDB transaction");
+    }
+    return txn;
+}
+
+
+
+void DB::setCollections(int numOfCollections)
+{
+    rlock readLock(_operationMutex);
+    mdb_env_close(_env);
+    _env = nullptr;
+    int rc = mdb_env_create(&_env);
+    if (rc != MDB_SUCCESS || _env == nullptr) {
+        throw std::runtime_error("Failed to create LMDB environment");
+    }
+    rc = mdb_env_set_mapsize(_env, _currentMemory);
+    if (rc != MDB_SUCCESS) {
+        mdb_env_close(_env);
+        throw std::runtime_error("Failed to set LMDB map size");
+    }
+
+    rc = mdb_env_set_maxdbs(_env, numOfCollections);
+    if (rc != MDB_SUCCESS) {
+        mdb_env_close(_env);
+        throw std::runtime_error("Failed to set LMDB max number of named databases");
+    }
+
+    rc = mdb_env_open(_env, _path.c_str(), MDB_WRITEMAP | MDB_CREATE, 0664);
+    if (rc != MDB_SUCCESS) {
+        mdb_env_close(_env);
+        throw std::runtime_error("Failed to open LMDB environment");
+    }
+    
+}
+
+void DB::incMemory()
 {
     int rc = mdb_env_set_mapsize(_env,(_currentMemory+_settings._MemUpdateSize));
     if (rc != MDB_SUCCESS) {
@@ -208,22 +338,24 @@ void DB::incMemory()
 void DB::incCollections() 
 {
     _settings._NumberOfCollections++;
-    int rc = mdb_env_set_maxdbs(_env, _settings._NumberOfCollections + 1);
-    if (rc != MDB_SUCCESS) {
-        mdb_env_close(_env);
-        throw std::runtime_error("Failed to set LMDB max number of named databases");
-    }
+    setCollections(_settings._NumberOfCollections);
     setSettings(_settings);
 }
 
 void DB::decCollections()
 {
     _settings._NumberOfCollections--;
-    int rc = mdb_env_set_maxdbs(_env, _settings._NumberOfCollections + 1);
-    if (rc != MDB_SUCCESS) {
-        mdb_env_close(_env);
-        throw std::runtime_error("Failed to set LMDB max number of named databases");
-    }
+    setCollections(_settings._NumberOfCollections);
     setSettings(_settings);
+}
+
+inline bool DB::doesValueExist(const std::string& valKey,MDB_dbi* db) const
+{
+    MDB_val key{valKey.size(),const_cast<char*>(valKey.c_str())}, val;
+    int res = mdb_get(getTxn(), *db, &key, &val);
+    std::cout << "res is: " << res << std::endl;
+    bool isNotFound = res == MDB_NOTFOUND;
+    return !res;
+    
 }
 
