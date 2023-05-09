@@ -11,7 +11,7 @@
 * switch case of codes to create a good error handling
 */
 
-
+using namespace db::doc;
 
 
 

@@ -1,6 +1,7 @@
 #include "DocDB.h"
 #include <functional>
 
+using namespace db::doc;
 
 
 DB::DB(const std::string& path, DbSettings& settings) noexcept(false)

@@ -1,5 +1,5 @@
 #include "Document.h"
-
+using namespace db::doc;
 http::json::JsonObject Document::toJson() const
 {
     return *this;

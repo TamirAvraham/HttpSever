@@ -9,7 +9,7 @@
 
 
 int main() {
-	DB db;
+	db::doc::DB db;
 	try
 	{
 		
