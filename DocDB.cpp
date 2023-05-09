@@ -36,7 +36,7 @@ DbSettings DB::setSettings(DbSettings settings) noexcept
     {
         updateSettings();
     }
-    return DbSettings();
+    return settings;
 }
 
 
@@ -123,7 +123,7 @@ void DB::openEnv(const std::string& path, DbSettings& settings) noexcept(false) 
     }
 
 
-    rc = mdb_env_open(_env, path.c_str(), MDB_WRITEMAP | MDB_CREATE, 0664);
+    rc = mdb_env_open(_env, path.c_str(), MDB_WRITEMAP | MDB_CREATE | MDB_NOTLS, 0664);
     if (rc != MDB_SUCCESS) {
         mdb_env_close(_env);
         throw std::runtime_error("Failed to open LMDB environment");
@@ -197,7 +197,7 @@ inline void DB::readDbSettings()
     _settings = readSettings;
 
     if (settingsTxn) {
-        mdb_txn_abort(settingsTxn);
+        auto ret = mdb_txn_commit(settingsTxn);
         mdb_dbi_close(_env, settingsDbi);
     }
 }
@@ -245,18 +245,17 @@ inline void DB::updateSettings()
     std::string settingsName = "dbsettings";
     
     MDB_dbi settingsDbi;
-    auto settingsTxn = openDb(settingsName, &settingsDbi, MDB_CREATE);
+    auto settingsTxn = openDb(settingsName, &settingsDbi);
 
     MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
-    MDB_val settingsValue{ sizeof(DbSettings), const_cast<DbSettings*>(&_settings) };
+    MDB_val settingsValue{ sizeof(_settings),&_settings };
     {
-        mdb_txn_abort(settingsTxn);
-        std::string set = "settings";
-        bool valexist = doesValueExist(set, &settingsDbi);
-        std::cout << valexist << std::endl;
+        
+        doesValueExist(&settingsDbi);
+        
     }
     
-    int rc = mdb_put(settingsTxn, settingsDbi, &settingsKey, &settingsValue, MDB_CURRENT);
+    int rc = mdb_put(settingsTxn, settingsDbi, &settingsKey, &settingsValue,0);
     if (rc != MDB_SUCCESS) {
         mdb_txn_abort(settingsTxn);
         mdb_dbi_close(_env, settingsDbi);
@@ -272,11 +271,7 @@ inline void DB::updateSettings()
         throw std::runtime_error("Failed to commit transaction: " + std::string(mdb_strerror(rc)));
     }
 
-    if (settingsTxn)
-    {
-        mdb_txn_abort(settingsTxn);
-        mdb_dbi_close(_env,settingsDbi);
-    }
+    mdb_dbi_close(_env, settingsDbi);
 }
 
 MDB_txn* DB::getTxn() const
@@ -317,7 +312,7 @@ void DB::setCollections(int numOfCollections)
         throw std::runtime_error("Failed to set LMDB max number of named databases");
     }
 
-    rc = mdb_env_open(_env, _path.c_str(), MDB_WRITEMAP | MDB_CREATE, 0664);
+    rc = mdb_env_open(_env, _path.c_str(), MDB_WRITEMAP | MDB_CREATE | MDB_NOTLS, 0664);
     if (rc != MDB_SUCCESS) {
         mdb_env_close(_env);
         throw std::runtime_error("Failed to open LMDB environment");
@@ -349,10 +344,11 @@ void DB::decCollections()
     setSettings(_settings);
 }
 
-inline bool DB::doesValueExist(const std::string& valKey,MDB_dbi* db) const
+inline bool DB::doesValueExist(MDB_dbi* db) const
 {
-    MDB_val key{valKey.size(),const_cast<char*>(valKey.c_str())}, val;
-    int res = mdb_get(getTxn(), *db, &key, &val);
+    MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
+    MDB_val settingsValue{ 0, nullptr };
+    int res = mdb_get(getTxn(), *db, &settingsKey, &settingsValue);
     std::cout << "res is: " << res << std::endl;
     bool isNotFound = res == MDB_NOTFOUND;
     return !res;

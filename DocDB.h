@@ -88,5 +88,5 @@ private:
     void incMemory();
     void incCollections();
     void decCollections();
-    inline bool doesValueExist(const std::string& valKey, MDB_dbi* db)const;
+    inline bool doesValueExist(MDB_dbi* db)const;
 };

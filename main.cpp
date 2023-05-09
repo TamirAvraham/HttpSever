@@ -12,8 +12,8 @@ int main() {
 	DB db;
 	try
 	{
-		auto collection = db.createCollection("testCollection");
-		1 == 1;
+		auto collection = db.getSettings()._NumberOfCollections;
+		std::cout << "amount of collections are " << collection << std::endl;
 	}
 	catch (const std::exception& e)
 	{
