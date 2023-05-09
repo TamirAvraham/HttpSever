@@ -164,6 +164,11 @@ MDB_txn* DB::openDb(const std::string& name, MDB_dbi* db, int flag) const noexce
     res = mdb_dbi_open(txn, name.c_str(), flags, db);
     if (res != MDB_SUCCESS) {
         mdb_txn_abort(txn);
+        if (MDB_NOTFOUND==res)
+        {
+            throw db::exceptions::NotFoundException("db was not found");
+        }
+        
         throw std::runtime_error("Failed to open LMDB database");
     }
 

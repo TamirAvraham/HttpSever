@@ -284,7 +284,7 @@ Document Collection::updateDocument(const Document& docToUpdate) const
     MDB_val mdbKey{ docName.size(), const_cast<char*>(docName.data())};
     MDB_val mdbValue{ docValueAsString.size(), const_cast<char*>(docValueAsString.data()) };
 
-    int result = mdb_put(_txn, _db, &mdbKey, &mdbValue, MDB_CURRENT);
+    int result = mdb_put(_txn, _db, &mdbKey, &mdbValue, 0);
 
     if (result != MDB_SUCCESS) {
         throw db::exceptions::DbException("error in updating a doc");
