@@ -296,6 +296,24 @@ Document Collection::updateDocument(const Document& docToUpdate) const
     }
     return docToUpdate;
 }
+std::vector<Document> db::doc::Collection::getAllDocuments() const
+{
+    std::vector<Document>ret;
+    MDB_cursor* cursor;
+    MDB_val key, data;
+    MDB_txn* txn = _requriedFunctions._getTxn();
+    int rc = mdb_cursor_open(txn, _db, &cursor);
+    while ((rc = mdb_cursor_get(cursor, &key, &data, MDB_NEXT)) == 0) {
+        auto json_str = std::string{ static_cast<const char*>(data.mv_data) };
+        ret.emplace_back(json_str);
+    }
+    rc=mdb_txn_commit(txn);
+    if (rc!=MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("error committing txn in getAllDocumnets");
+    }
+    return ret;
+}
 template<class F, class... Args>
 void Collection::handleErrors(int errorCode, std::function<F(Args...)> function)
 {

@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <shared_mutex>
 #include "Collection.h"
-
+#include "Query.h"
 namespace db
 {
     namespace doc
@@ -63,7 +63,7 @@ namespace db
 
             std::shared_mutex getTransactionMutex;
 
-
+            std::vector<Document> Query(db::query::Query&& query);
         private:
 
             //ctor helper for env

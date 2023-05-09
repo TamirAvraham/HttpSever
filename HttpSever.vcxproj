@@ -150,6 +150,8 @@
     <ClCompile Include="JsonValue.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Query.cpp" />
+    <ClCompile Include="QueryModifier.cpp" />
     <ClCompile Include="TcpServer.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
   </ItemGroup>
@@ -170,6 +172,8 @@
     <ClInclude Include="JsonType.h" />
     <ClInclude Include="JsonValue.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="Query.h" />
+    <ClInclude Include="QueryModifier.h" />
     <ClInclude Include="TcpServer.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="ThreadSafeQueue.h" />

@@ -53,7 +53,7 @@ namespace db
 
             Document updateDocument(const Document& docToUpdate)const;
 
-
+            std::vector<Document> getAllDocuments()const;
 
         private:
             MDB_dbi _db;

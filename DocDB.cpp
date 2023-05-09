@@ -41,7 +41,7 @@ DbSettings DB::setSettings(DbSettings settings) noexcept
 }
 
 
-Collection DB::openCollection(const std::string& name)
+Collection DB::openCollection(const std::string& name) 
 {
     MDB_dbi db;
     auto txn = openDb(name,&db);
@@ -51,7 +51,7 @@ Collection DB::openCollection(const std::string& name)
     return ret;
 }
 
-Collection DB::openCollection(const std::string&& name)
+Collection DB::openCollection(const std::string&& name) 
 {
     MDB_dbi db;
     auto txn = openDb(name, &db);
@@ -89,6 +89,58 @@ bool DB::deleteCollection(const std::string&& CollectionName)
 {
     decCollections();
     return false;
+}
+
+std::vector<Document> db::doc::DB::Query(db::query::Query&& query) 
+{
+    std::vector<Document> ret;
+    for (const auto& collectionName : query.location.collections) {
+        auto documents = openCollection(collectionName).getAllDocuments();
+        for (const auto& document : documents) {
+            bool passedChecks = true;
+            for (const auto& filter:query.limiters)
+            {
+                try
+                {
+                    if (!filter.second(document[filter.first]))
+                    {
+                        passedChecks = false;
+                        break;
+                    }
+                }
+                catch (...){ /*ignore the error*/ }
+            }
+            if (passedChecks) {
+                if (query.data.dataFileds.empty())
+                {
+                    ret.push_back(document);
+                }
+                else
+                {
+                    Document filteredDoc(document.getName());
+                    bool hadAllFileds = true;
+                    for (const auto& filed : query.data.dataFileds)
+                    {
+                        try
+                        {
+                            filteredDoc.insert({ filed,document[filed] });
+                        }
+                        catch (...)
+                        {
+                            hadAllFileds = false;
+                            break;
+                        }
+                    }
+                    if (hadAllFileds)
+                    {
+                        ret.push_back(filteredDoc);
+                    }
+                    
+                }
+            }
+        }
+    }
+    return ret;
 }
 
 void DB::openEnv(const std::string& path, DbSettings& settings) noexcept(false) {
