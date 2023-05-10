@@ -159,6 +159,7 @@
     <ClInclude Include="BlockingQueue.h" />
     <ClInclude Include="Collection.h" />
     <ClInclude Include="DBExeptions.hpp" />
+    <ClInclude Include="DBGenerics.h" />
     <ClInclude Include="DocDB.h" />
     <ClInclude Include="Document.h" />
     <ClInclude Include="FileReader.h" />

@@ -140,6 +140,9 @@
     <ClInclude Include="QueryModifier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DBGenerics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="welcomePage.html">

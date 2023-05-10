@@ -6,6 +6,7 @@
 #include <shared_mutex>
 #include "Collection.h"
 #include "Query.h"
+#include "DBGenerics.h"
 namespace db
 {
     namespace doc
@@ -29,7 +30,7 @@ namespace db
         };
 
 
-        class DB {
+        class DB:public db::DB {
             using rlock = std::shared_lock<std::shared_mutex>;
 
         public:
@@ -63,7 +64,7 @@ namespace db
 
             std::shared_mutex getTransactionMutex;
 
-            std::vector<Document> Query(db::query::Query&& query);
+            virtual DBMultiResult Query(const db::query::Query& query)override;
         private:
 
             //ctor helper for env

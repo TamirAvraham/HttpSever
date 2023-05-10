@@ -54,6 +54,17 @@ std::string Document::getName() const noexcept
     return _name;
 }
 
+JsonValue db::doc::Document::getValue(const std::string& valueName)
+{
+	return this->operator[](valueName);
+}
+
+JsonValue db::doc::Document::updateValue(const std::string& valueName, const JsonValue& newValue)
+{
+	this->set(valueName, newValue);
+	return this->operator[](valueName);
+}
+
 bool Document::isValid() const noexcept
 {
 	try

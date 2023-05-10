@@ -1,11 +1,12 @@
 #pragma once
 #include "JsonObject.h"
+#include "DBGenerics.h"
 namespace db
 {
     namespace doc
     {
         class Document :
-            public http::json::JsonObject
+            public http::json::JsonObject,public db::DBResult
         {
         public:
 
@@ -26,7 +27,9 @@ namespace db
             Document(const char* name, const http::json::JsonObject&& data)noexcept;
             //getters and setters
 
-            std::string getName()const noexcept;
+            virtual std::string getName()const noexcept override;
+            virtual JsonValue getValue(const std::string& valueName)override;
+            virtual JsonValue updateValue(const std::string& valueName,const JsonValue& newValue)override;
             //bool operations
 
             bool isValid()const noexcept;

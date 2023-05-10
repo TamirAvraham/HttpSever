@@ -82,13 +82,27 @@ Collection DB::createCollection(const std::string&& collectionName)
 bool DB::deleteCollection(const std::string& CollectionName)
 {
     decCollections();
-    return false;
+    MDB_dbi db;
+    auto txn = openDb(CollectionName, &db);
+    int res = mdb_drop(txn, db, 0);
+    if (res)
+    {
+        return false;
+    }
+    return true;
 }
 
 bool DB::deleteCollection(const std::string&& CollectionName)
 {
     decCollections();
-    return false;
+    MDB_dbi db;
+    auto txn = openDb(CollectionName, &db);
+    int res = mdb_drop(txn, db, 0);
+    if (res)
+    {
+        return false;
+    }
+    return true;
 }
 
 std::vector<Document> db::doc::DB::Query(db::query::Query&& query) 
