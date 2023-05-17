@@ -40,7 +40,7 @@ http::json::JsonObject& http::json::JsonObject::operator=(const std::map<std::st
 	return *this;
 }
 
-http::json::JsonValue& http::json::JsonObject::operator[](const std::string& name)const
+http::json::JsonValue http::json::JsonObject::operator[](const std::string& name)const
 {
 	JsonValue ret;
 	try {

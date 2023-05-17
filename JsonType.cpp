@@ -7,7 +7,7 @@ http::json::JsonType http::json::getTypeFromString(std::string valueAsString)
 		return JsonType::Null;
 	}
     char firstChar = valueAsString[0], lastChar = valueAsString[valueAsString.length() - 1];
-	std::cout << "first char: " << firstChar << " last char: " << lastChar << " \n";
+	
 	switch (firstChar)
 	{
 	case '[':

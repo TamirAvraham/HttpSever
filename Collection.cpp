@@ -38,11 +38,7 @@ Collection::Collection(const char* name, MDB_dbi db, MDB_env* env, CollectionReq
 
 // Implementation of destructor
 Collection::~Collection() noexcept(false) {
-    if (_txn != nullptr) {
-        if (mdb_txn_commit(_txn) != 0) {
-            throw db::exceptions::DbException("cant open collection");
-        }
-    }
+    
 
 }
 
@@ -301,11 +297,17 @@ std::vector<Document> db::doc::Collection::getAllDocuments() const
     std::vector<Document>ret;
     MDB_cursor* cursor;
     MDB_val key, data;
+
     MDB_txn* txn = _requriedFunctions._getTxn();
+
     int rc = mdb_cursor_open(txn, _db, &cursor);
+
     while ((rc = mdb_cursor_get(cursor, &key, &data, MDB_NEXT)) == 0) {
-        auto json_str = std::string{ static_cast<const char*>(data.mv_data) };
-        ret.emplace_back(json_str);
+        
+        auto json = http::json::JsonObject{ static_cast<const char*>(data.mv_data) };
+        std::string name = json["name"].string_value();
+        Document doc(name, json);
+        ret.push_back(doc);
     }
     rc=mdb_txn_commit(txn);
     if (rc!=MDB_SUCCESS)

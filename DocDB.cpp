@@ -105,9 +105,9 @@ bool DB::deleteCollection(const std::string&& CollectionName)
     return true;
 }
 
-std::vector<Document> db::doc::DB::Query(db::query::Query&& query) 
+db::DBMultiResult DB::Query(const db::query::Query& query)
 {
-    std::vector<Document> ret;
+    db::DBMultiResult ret;
     for (const auto& collectionName : query.location.collections) {
         auto documents = openCollection(collectionName).getAllDocuments();
         for (const auto& document : documents) {
@@ -127,7 +127,7 @@ std::vector<Document> db::doc::DB::Query(db::query::Query&& query)
             if (passedChecks) {
                 if (query.data.dataFileds.empty())
                 {
-                    ret.push_back(document);
+                    ret.push_back(std::make_shared<Document>(document));
                 }
                 else
                 {
@@ -137,6 +137,7 @@ std::vector<Document> db::doc::DB::Query(db::query::Query&& query)
                     {
                         try
                         {
+                            std::cout << filteredDoc.ToString() << '\n' << document.getName() << std::endl;
                             filteredDoc.insert({ filed,document[filed] });
                         }
                         catch (...)
@@ -147,7 +148,7 @@ std::vector<Document> db::doc::DB::Query(db::query::Query&& query)
                     }
                     if (hadAllFileds)
                     {
-                        ret.push_back(filteredDoc);
+                        ret.push_back(std::make_shared<Document>(filteredDoc));
                     }
                     
                 }
@@ -421,7 +422,6 @@ inline bool DB::doesValueExist(MDB_dbi* db) const
     MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
     MDB_val settingsValue{ 0, nullptr };
     int res = mdb_get(getTxn(), *db, &settingsKey, &settingsValue);
-    std::cout << "res is: " << res << std::endl;
     bool isNotFound = res == MDB_NOTFOUND;
     return !res;
     
