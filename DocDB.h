@@ -47,9 +47,7 @@ namespace db
             DbSettings setSettings(DbSettings settings)noexcept;
 
 
-            /*TODO:
-            * add Collection Not Found error
-            */
+           
             Collection openCollection(const std::string& name);
             Collection openCollection(const std::string&& name);
 
@@ -65,6 +63,8 @@ namespace db
             std::shared_mutex getTransactionMutex;
 
             virtual DBMultiResult Query(const db::query::Query& query)override;
+
+            std::vector<Collection> getAllCollections()noexcept;
         private:
 
             //ctor helper for env
@@ -93,7 +93,12 @@ namespace db
             void incMemory();
             void incCollections();
             void decCollections();
+
             inline bool doesValueExist(MDB_dbi* db)const;
+
+            void writeCollectionIntoDBSettings(const std::string& collectionName);
+            std::vector<std::string> getColletionsNamesFromDB()const;
+            std::string getCollectionNamesString()const;
         };
     }
 }

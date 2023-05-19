@@ -66,7 +66,7 @@ Collection DB::createCollection(const std::string& collectionName)
     auto txn = openDb(collectionName, &db,MDB_CREATE);
     
     Collection ret(collectionName, db, _env, { std::bind(&DB::getTxn,this),std::bind(&DB::incMemory,this) });
-    
+    writeCollectionIntoDBSettings(collectionName);
     return ret;
 }
 
@@ -76,6 +76,7 @@ Collection DB::createCollection(const std::string&& collectionName)
     MDB_dbi db;
     auto txn = openDb(collectionName, &db, MDB_CREATE);
     Collection ret(collectionName, db, _env, { std::bind(&DB::getTxn,this),std::bind(&DB::incMemory,this) });
+    writeCollectionIntoDBSettings(collectionName);
     return ret;
 }
 
@@ -155,6 +156,17 @@ db::DBMultiResult DB::Query(const db::query::Query& query)
             }
         }
     }
+    return ret;
+}
+
+std::vector<Collection> db::doc::DB::getAllCollections() noexcept
+{
+    std::vector<Collection> ret;
+    auto collectionsNames = getColletionsNamesFromDB();
+
+    for (const auto& collectionName : collectionsNames) 
+        ret.push_back(openCollection(collectionName));
+    
     return ret;
 }
 
@@ -322,11 +334,7 @@ inline void DB::updateSettings()
 
     MDB_val settingsKey{ sizeof("settings"), const_cast<char*>("settings") };
     MDB_val settingsValue{ sizeof(_settings),&_settings };
-    {
-        
-        doesValueExist(&settingsDbi);
-        
-    }
+    
     
     int rc = mdb_put(settingsTxn, settingsDbi, &settingsKey, &settingsValue,0);
     if (rc != MDB_SUCCESS) {
@@ -426,4 +434,101 @@ inline bool DB::doesValueExist(MDB_dbi* db) const
     return !res;
     
 }
+
+void db::doc::DB::writeCollectionIntoDBSettings(const std::string& collectionName)
+{
+    std::string write;
+    try
+    {
+        std::string prev = getCollectionNamesString();
+        if (prev == "")
+        {
+            prev = collectionName;
+        }
+        else
+        {
+            if (prev.find(collectionName)==std::string::npos)
+            {
+                prev += ',';
+                prev += collectionName;
+            }
+        }
+        write = prev;
+    }
+    catch (const std::exception&)
+    {
+        write = collectionName;
+    }
+
+    MDB_dbi settingsDBI;
+    MDB_val settingsKey{ sizeof("collections"), const_cast<char*>("collections") };
+    MDB_val settingsValue{ write.size(), const_cast<char*>(write.c_str()) };
+
+    std::string settingsName = "dbsettings";
+
+    auto txn = openDb(settingsName, &settingsDBI);
+    int res = mdb_put(txn, settingsDBI, &settingsKey, &settingsValue, 0);
+    if (res!=MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant update collections");
+    }
+    res = mdb_txn_commit(txn);
+    if (res != MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant update collections");
+    }
+}
+
+std::vector<std::string> db::doc::DB::getColletionsNamesFromDB() const
+{
+    std::vector<std::string> ret;
+    std::string CollectionsNamesCombined = getCollectionNamesString(), collectionName;
+    std::istringstream collectionNamesAsStringStream(CollectionsNamesCombined);
+
+    while (std::getline(collectionNamesAsStringStream,collectionName,','))
+    {
+        ret.push_back(collectionName);
+    }
+    return ret;
+}
+
+void removeControlCharacter(std::string& str, char controlChar)
+{
+    size_t pos = 0;
+
+    while ((pos = str.find(controlChar, pos)) != std::string::npos)
+    {
+        str.erase(pos, 1);
+    }
+}
+
+std::string db::doc::DB::getCollectionNamesString() const
+{
+    MDB_dbi settingsDBI;
+    MDB_val settingsKey{ sizeof("collections"), const_cast<char*>("collections") };
+    MDB_val settingsValue{ 0, nullptr };
+
+    std::string settingsName = "dbsettings";
+
+    auto txn = openDb(settingsName, &settingsDBI);
+
+    int res = mdb_get(txn, settingsDBI, &settingsKey, &settingsValue);
+    if (res != MDB_SUCCESS)
+    {
+        throw db::exceptions::NotFoundException("cant find collections names");
+    }
+
+    res = mdb_txn_commit(txn);
+    if (res!=MDB_SUCCESS)
+    {
+        throw db::exceptions::DbException("cant commit changes to the db");
+    }
+   auto ret = std::string{ reinterpret_cast<const char*>(settingsValue.mv_data) };
+   removeControlCharacter(ret, '\x10');
+   return ret;
+}
+
+
+
+
 

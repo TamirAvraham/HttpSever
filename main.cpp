@@ -12,7 +12,8 @@ int main() {
 	db::doc::DB db;
 	try
 	{
-		auto collection= db.createCollection("testCollection");
+		constexpr auto collectionName = "second collection";
+		auto collection = db.createCollection(collectionName);
 
 		auto doc1=collection.createDocument("doc 1");
 
@@ -47,13 +48,16 @@ int main() {
 		collection.updateDocument(doc2);
 
 		db::query::Query query;
-		query.location.collections.push_back("testCollection");
+		query.location.collections.push_back(collectionName);
 		query.data.dataFileds.push_back("doc number");
 		query.data.dataFileds.push_back("random value");
 
 		auto queryResult = db.Query(query);
 
-		std::cout << "test 2 passed";
+		std::cout << "test 2 passed"<<std::endl;
+
+		auto collections=db.getAllCollections();
+		std::cout << "got collections" << std::endl;
 	}
 	catch (const std::exception& e)
 	{
